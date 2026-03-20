@@ -1,1 +1,110 @@
-/* You can add global styles to this file, and also import other style files */
+/* Importamos la fuente similar a Sansation/Davivienda */
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap');
+
+:root {
+  --naranja-fbd: #ff671b;
+  --gris-fbd: #78787b;
+  --fbd-orange: #ff671b;
+  --fbd-orange-dark: #e05510;
+}
+
+* {
+  font-family: 'Ubuntu', sans-serif !important;
+}
+
+body {
+  margin: 0;
+  background-color: #efefef;
+  color: var(--gris-fbd);
+}
+
+.mat-mdc-card-title {
+  font-weight: 700 !important;
+  font-size: 24px !important;
+  color: var(--gris-fbd) !important;
+  letter-spacing: -0.5px;
+}
+
+/* ── Fix texto blanco en botón SIGUIENTE ── */
+button.fbd-button .mdc-button__label {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* ── Fix texto blanco en botones Subir PDF ── */
+label.upload-btn {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+/* ── Fix texto naranja en resultado diagnóstico ── */
+.diag-nivel-nombre {
+  -webkit-text-fill-color: var(--fbd-orange-dark) !important;
+}
+
+/* ── Fix espaciado trofeo resultado diagnóstico ── */
+.diag-trofeo {
+  display: block;
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+/* ── Fix grilla ODS ── */
+.ods-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+  margin-top: 8px !important;
+}
+
+.ods-card {
+  position: relative !important;
+  padding: 0 !important;
+  border: 3px solid transparent !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  background: none !important;
+  overflow: hidden !important;
+  aspect-ratio: 1 !important;
+  width: 100% !important;
+  transition: all 0.2s ease !important;
+}
+
+.ods-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2) !important;
+}
+
+.ods-card.ods-selected {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+}
+
+.ods-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  border-radius: 7px !important;
+}
+
+.ods-check {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  width: 22px !important;
+  height: 22px !important;
+  background: white !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  color: #333 !important;
+  -webkit-text-fill-color: #333 !important;
+}
+
+@media (max-width: 600px) {
+  .ods-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}

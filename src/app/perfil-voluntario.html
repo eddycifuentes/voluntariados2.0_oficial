@@ -1,0 +1,297 @@
+<div class="perfil-container">
+
+  <!-- HEADER -->
+  <header class="perfil-header">
+    <img src="logo-fbd.png" alt="Fundación Bolívar Davivienda" class="fbd-logo">
+    <span class="fbd-tagline">Plataforma de Voluntariado Corporativo</span>
+  </header>
+
+  <!-- TARJETA RESUMEN SUPERIOR -->
+  <div class="perfil-hero">
+    <div class="perfil-avatar">
+      <img *ngIf="fotoPreview" [src]="fotoPreview" alt="Foto de perfil" class="avatar-img">
+      <div *ngIf="!fotoPreview" class="avatar-placeholder">
+        {{ datosNoEditables.nombres.charAt(0) }}
+      </div>
+    </div>
+    <div class="perfil-hero-info">
+      <h1 class="perfil-nombre">{{ datosNoEditables.nombres }}</h1>
+      <div class="perfil-nivel-badge">
+        🏆 {{ datosDiagnostico.nivel }} · {{ datosDiagnostico.puntaje }} pts
+      </div>
+      <span class="perfil-empresa">{{ datosNoEditables.empresa }}</span>
+    </div>
+    <div class="guardado-msg" *ngIf="guardadoMsg">{{ guardadoMsg }}</div>
+  </div>
+
+  <!-- PESTAÑAS -->
+  <mat-card class="perfil-card">
+    <mat-tab-group [(selectedIndex)]="tabActiva" class="perfil-tabs" animationDuration="200ms">
+
+      <!-- ══════════════════════════════════════════════
+           PESTAÑA 1 — INFORMACIÓN BÁSICA PRIVADA
+      ═══════════════════════════════════════════════ -->
+      <mat-tab label="🔒 Información Privada">
+        <div class="tab-content">
+
+          <!-- Campos NO editables -->
+          <div class="section-header">DATOS NO EDITABLES</div>
+          <div class="campos-readonly-grid">
+            <div class="campo-readonly">
+              <span class="campo-label">Tipo de Documento</span>
+              <span class="campo-valor">{{ datosNoEditables.tipoDoc }}</span>
+            </div>
+            <div class="campo-readonly">
+              <span class="campo-label">Número de Documento</span>
+              <span class="campo-valor">{{ datosNoEditables.numDoc }}</span>
+            </div>
+            <div class="campo-readonly">
+              <span class="campo-label">Nombres y Apellidos</span>
+              <span class="campo-valor">{{ datosNoEditables.nombres }}</span>
+            </div>
+            <div class="campo-readonly">
+              <span class="campo-label">Fecha de Nacimiento</span>
+              <span class="campo-valor">{{ datosNoEditables.fechaNac }}</span>
+            </div>
+            <div class="campo-readonly">
+              <span class="campo-label">Empresa</span>
+              <span class="campo-valor">{{ datosNoEditables.empresa }}</span>
+            </div>
+            <div class="campo-readonly">
+              <span class="campo-label">ARL</span>
+              <span class="campo-valor">{{ datosNoEditables.arl }}</span>
+            </div>
+          </div>
+
+          <!-- Campos editables -->
+          <div class="section-header" style="margin-top:24px">DATOS EDITABLES</div>
+          <form [formGroup]="formTab1" class="tab-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Correo Electrónico Corporativo</mat-label>
+              <input matInput formControlName="email" type="email">
+              <mat-error>{{ getFieldError(formTab1, 'email') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Número de Celular</mat-label>
+              <input matInput formControlName="celular" type="tel">
+              <mat-error>{{ getFieldError(formTab1, 'celular') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>EPS</mat-label>
+              <mat-select formControlName="eps">
+                <mat-option *ngFor="let e of epsList" [value]="e">{{ e }}</mat-option>
+              </mat-select>
+              <mat-error>{{ getFieldError(formTab1, 'eps') }}</mat-error>
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Departamento</mat-label>
+                <mat-select formControlName="departamento" (selectionChange)="onDepartamentoChange()">
+                  <mat-option *ngFor="let d of departamentos" [value]="d">{{ d }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Municipio</mat-label>
+                <mat-select formControlName="municipio">
+                  <mat-option *ngFor="let m of municipios" [value]="m">{{ m }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="tab-actions">
+              <button mat-flat-button class="fbd-button" type="button"
+                      (click)="guardarTab1()" [disabled]="formTab1.invalid">
+                Guardar cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- ══════════════════════════════════════════════
+           PESTAÑA 2 — PERFIL PÚBLICO
+      ═══════════════════════════════════════════════ -->
+      <mat-tab label="👁 Perfil Público">
+        <div class="tab-content">
+          <p class="tab-desc">
+            Estos datos son <strong>opcionales</strong>. Activa el toggle de cada campo
+            para hacerlo visible en el Marketplace.
+          </p>
+
+          <form [formGroup]="formTab2" class="tab-form">
+
+            <!-- Foto -->
+            <div class="campo-toggle-row">
+              <div class="campo-toggle-info">
+                <span class="campo-toggle-label">Foto de perfil</span>
+                <span class="campo-toggle-hint">Corporativa tipo carnet, fondo blanco</span>
+              </div>
+              <div class="campo-toggle-control">
+                <mat-slide-toggle
+                  [(ngModel)]="toggles.foto"
+                  [ngModelOptions]="{standalone:true}"
+                  (change)="onToggleChange('foto')"
+                  color="primary">
+                  <span class="toggle-estado">{{ toggles.foto ? '👁 Público' : '🔒 Privado' }}</span>
+                </mat-slide-toggle>
+              </div>
+            </div>
+            <div class="foto-upload-area" *ngIf="toggles.foto">
+              <img *ngIf="fotoPreview" [src]="fotoPreview" class="foto-preview">
+              <div *ngIf="!fotoPreview" class="foto-placeholder">Sin foto</div>
+              <label class="upload-btn">
+                Subir foto
+                <input type="file" accept="image/*" hidden (change)="onFotoSeleccionada($event)">
+              </label>
+            </div>
+
+            <!-- Cargo -->
+            <div class="campo-toggle-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Cargo dentro de la empresa</mat-label>
+                <input matInput formControlName="cargo" placeholder="Ej: Analista de Desarrollo">
+              </mat-form-field>
+              <mat-slide-toggle
+                [(ngModel)]="toggles.cargo"
+                [ngModelOptions]="{standalone:true}"
+                (change)="onToggleChange('cargo')"
+                color="primary">
+                <span class="toggle-estado">{{ toggles.cargo ? '👁' : '🔒' }}</span>
+              </mat-slide-toggle>
+            </div>
+
+            <!-- Restricciones -->
+            <div class="campo-toggle-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Restricciones alimenticias / Alergias</mat-label>
+                <input matInput formControlName="restricciones" placeholder="Ej: Vegetariano, Alérgico a nueces">
+              </mat-form-field>
+              <mat-slide-toggle
+                [(ngModel)]="toggles.restricciones"
+                [ngModelOptions]="{standalone:true}"
+                (change)="onToggleChange('restricciones')"
+                color="primary">
+                <span class="toggle-estado">{{ toggles.restricciones ? '👁' : '🔒' }}</span>
+              </mat-slide-toggle>
+            </div>
+
+            <!-- Nivel educativo -->
+            <div class="campo-toggle-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Nivel educativo</mat-label>
+                <mat-select formControlName="nivelEducativo">
+                  <mat-option *ngFor="let n of nivelesEducativos" [value]="n">{{ n }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-slide-toggle
+                [(ngModel)]="toggles.educacion"
+                [ngModelOptions]="{standalone:true}"
+                (change)="onToggleChange('educacion')"
+                color="primary">
+                <span class="toggle-estado">{{ toggles.educacion ? '👁' : '🔒' }}</span>
+              </mat-slide-toggle>
+            </div>
+
+            <!-- Género -->
+            <div class="campo-toggle-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Género</mat-label>
+                <mat-select formControlName="genero">
+                  <mat-option *ngFor="let g of generosOpciones" [value]="g">{{ g }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-slide-toggle
+                [(ngModel)]="toggles.genero"
+                [ngModelOptions]="{standalone:true}"
+                (change)="onToggleChange('genero')"
+                color="primary">
+                <span class="toggle-estado">{{ toggles.genero ? '👁' : '🔒' }}</span>
+              </mat-slide-toggle>
+            </div>
+
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- ══════════════════════════════════════════════
+           PESTAÑA 3 — VISTA PREVIA
+      ═══════════════════════════════════════════════ -->
+      <mat-tab label="👤 Vista Previa">
+        <div class="tab-content">
+          <p class="tab-desc">Así verán tu perfil las organizaciones sociales.</p>
+
+          <div class="vista-previa-card">
+
+            <!-- Encabezado -->
+            <div class="vp-header">
+              <div class="vp-avatar">
+                <img *ngIf="fotoPreview && toggles.foto" [src]="fotoPreview" class="vp-avatar-img">
+                <div *ngIf="!fotoPreview || !toggles.foto" class="vp-avatar-placeholder">
+                  {{ datosNoEditables.nombres.charAt(0) }}
+                </div>
+              </div>
+              <div class="vp-header-info">
+                <h2 class="vp-nombre">{{ datosNoEditables.nombres }}</h2>
+                <span class="vp-cargo" *ngIf="toggles.cargo && formTab2.get('cargo')?.value">
+                  {{ formTab2.get('cargo')?.value }}
+                </span>
+                <div class="vp-nivel">
+                  🏆 <strong>{{ datosDiagnostico.nivel }}</strong>
+                  · {{ datosDiagnostico.puntaje }} pts
+                </div>
+              </div>
+            </div>
+
+            <!-- ODS Top 3 -->
+            <div class="vp-seccion">
+              <div class="vp-seccion-titulo">ÁREAS DE INTERÉS</div>
+              <div class="vp-ods-list">
+                <div class="vp-ods-item" *ngFor="let ods of odsTop3Items">
+                  <img [src]="ods.img" [alt]="ods.nombre" class="vp-ods-img">
+                  <span class="vp-ods-nombre">{{ ods.nombre }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div class="vp-seccion">
+              <div class="vp-seccion-titulo">HABILIDAD ESPECIAL</div>
+              <span class="vp-tag">{{ datosDiagnostico.habilidad }}</span>
+            </div>
+
+            <div class="vp-seccion">
+              <div class="vp-seccion-titulo">DISPONIBILIDAD</div>
+              <span class="vp-tag">{{ datosDiagnostico.disponibilidad }}</span>
+            </div>
+
+            <!-- Opcionales activados -->
+            <div class="vp-seccion" *ngIf="toggles.educacion && formTab2.get('nivelEducativo')?.value">
+              <div class="vp-seccion-titulo">NIVEL EDUCATIVO</div>
+              <span class="vp-tag">{{ formTab2.get('nivelEducativo')?.value }}</span>
+            </div>
+
+            <div class="vp-seccion" *ngIf="toggles.genero && formTab2.get('genero')?.value">
+              <div class="vp-seccion-titulo">GÉNERO</div>
+              <span class="vp-tag">{{ formTab2.get('genero')?.value }}</span>
+            </div>
+
+          </div>
+
+          <!-- Botón publicar -->
+          <div class="tab-actions">
+            <button mat-flat-button class="fbd-button fbd-button-lg" type="button"
+                    (click)="publicarPerfil()">
+              🚀 Publicar Perfil
+            </button>
+          </div>
+
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </mat-card>
+
+</div>

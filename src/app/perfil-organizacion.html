@@ -1,0 +1,417 @@
+<div class="perfil-container">
+
+  <!-- HEADER -->
+  <header class="perfil-header">
+    <img src="logo-fbd.png" alt="Fundación Bolívar Davivienda" class="fbd-logo">
+    <span class="fbd-tagline">Plataforma de Voluntariado Corporativo</span>
+  </header>
+
+  <!-- HERO -->
+  <div class="perfil-hero">
+    <div class="perfil-logo-wrap">
+      <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo organización" class="logo-img">
+      <div *ngIf="!logoPreview" class="logo-placeholder">
+        {{ datosNoEditables.razonSocial.charAt(0) }}
+      </div>
+    </div>
+    <div class="perfil-hero-info">
+      <h1 class="perfil-nombre">{{ datosNoEditables.razonSocial }}</h1>
+      <div class="perfil-nivel-badge">
+        {{ nivelIcono }} {{ datosDiagnostico.nivel }} · {{ datosDiagnostico.puntaje }} pts
+      </div>
+      <span class="perfil-nit">NIT: {{ datosNoEditables.nit }}</span>
+    </div>
+    <div class="guardado-msg" *ngIf="guardadoMsg">{{ guardadoMsg }}</div>
+  </div>
+
+  <!-- PESTAÑAS -->
+  <mat-card class="perfil-card">
+    <mat-tab-group [(selectedIndex)]="tabActiva" class="perfil-tabs" animationDuration="200ms">
+
+      <!-- ══════════════════════════════════
+           PESTAÑA 1 — INFORMACIÓN PRIVADA
+      ═══════════════════════════════════ -->
+      <mat-tab label="🔒 Información Privada">
+        <div class="tab-content">
+
+          <!-- No editables -->
+          <div class="section-header">DATOS NO EDITABLES</div>
+          <div class="campos-readonly-grid">
+            <div class="campo-readonly">
+              <span class="campo-label">NIT</span>
+              <span class="campo-valor">{{ datosNoEditables.nit }}</span>
+            </div>
+            <div class="campo-readonly">
+              <span class="campo-label">Razón Social</span>
+              <span class="campo-valor">{{ datosNoEditables.razonSocial }}</span>
+            </div>
+          </div>
+
+          <!-- Representante Legal -->
+          <div class="section-header" style="margin-top:24px">REPRESENTANTE LEGAL</div>
+          <form [formGroup]="formTab1" class="tab-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nombres completos del Representante Legal</mat-label>
+              <input matInput formControlName="repNombre">
+              <mat-error>{{ getFieldError(formTab1, 'repNombre') }}</mat-error>
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Correo del Representante Legal</mat-label>
+                <input matInput formControlName="repCorreo" type="email">
+                <mat-error>{{ getFieldError(formTab1, 'repCorreo') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Celular del Representante Legal</mat-label>
+                <input matInput formControlName="repCelular" type="tel">
+                <mat-error>{{ getFieldError(formTab1, 'repCelular') }}</mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- Gestor de voluntariado -->
+            <div class="section-header" style="margin-top:8px">GESTOR DE VOLUNTARIADO</div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nombres y apellidos del Gestor</mat-label>
+              <input matInput formControlName="gestorNombre">
+              <mat-error>{{ getFieldError(formTab1, 'gestorNombre') }}</mat-error>
+            </mat-form-field>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Cargo del Gestor</mat-label>
+                <input matInput formControlName="gestorCargo" placeholder="Ej: Coordinador de Voluntariado">
+                <mat-error>{{ getFieldError(formTab1, 'gestorCargo') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Área encargada</mat-label>
+                <input matInput formControlName="gestorArea" placeholder="Ej: Gestión Social">
+                <mat-error>{{ getFieldError(formTab1, 'gestorArea') }}</mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="form-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Correo corporativo del Gestor</mat-label>
+                <input matInput formControlName="gestorCorreo" type="email">
+                <mat-error>{{ getFieldError(formTab1, 'gestorCorreo') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Celular de contacto del Gestor</mat-label>
+                <input matInput formControlName="gestorCelular" type="tel">
+                <mat-error>{{ getFieldError(formTab1, 'gestorCelular') }}</mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="tab-actions">
+              <button mat-flat-button class="fbd-button" type="button"
+                      (click)="guardarTab1()" [disabled]="formTab1.invalid">
+                Guardar cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- ══════════════════════════════════
+           PESTAÑA 2 — PERFIL PÚBLICO
+      ═══════════════════════════════════ -->
+      <mat-tab label="👁 Perfil Público">
+        <div class="tab-content">
+          <p class="tab-desc">
+            Los campos marcados como <strong>Obligatorios</strong> siempre serán
+            visibles en el Marketplace. Los <strong>Opcionales</strong> los controlas
+            con el toggle.
+          </p>
+
+          <form [formGroup]="formTab2" class="tab-form">
+
+            <!-- Logo (opcional) -->
+            <div class="section-header">LOGO <span class="badge-opcional">Opcional</span></div>
+            <div class="logo-upload-area">
+              <img *ngIf="logoPreview" [src]="logoPreview" class="logo-preview-sm">
+              <div *ngIf="!logoPreview" class="logo-placeholder-sm">PNG</div>
+              <div class="logo-upload-info">
+                <span class="logo-hint">Solo formato PNG · Fondo transparente o blanco</span>
+                <label class="upload-btn">
+                  Subir logo
+                  <input type="file" accept="image/png" hidden (change)="onLogoSeleccionado($event)">
+                </label>
+              </div>
+            </div>
+
+            <!-- Cobertura (obligatorio) -->
+            <div class="section-header" style="margin-top:16px">
+              COBERTURA <span class="badge-obligatorio">Obligatorio</span>
+            </div>
+            <p class="tab-desc" style="margin-bottom:8px">
+              Selecciona el departamento y agrega los municipios donde opera tu organización.
+            </p>
+            <div class="form-row" style="align-items:flex-start">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Departamento</mat-label>
+                <mat-select (selectionChange)="onDeptoCobertura($event.value)">
+                  <mat-option *ngFor="let d of departamentos" [value]="d">{{ d }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Municipio</mat-label>
+                <mat-select (selectionChange)="agregarCobertura($event.value)"
+                            [disabled]="municipiosDisponibles.length === 0">
+                  <mat-option *ngFor="let m of municipiosDisponibles" [value]="m">{{ m }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <!-- Chips de cobertura seleccionada -->
+            <div class="chips-wrap" *ngIf="coberturaSeleccionada.length > 0">
+              <span class="chip" *ngFor="let m of coberturaSeleccionada">
+                {{ m }}
+                <button class="chip-remove" (click)="quitarCobertura(m)">✕</button>
+              </span>
+            </div>
+            <p class="campo-hint" *ngIf="coberturaSeleccionada.length === 0">
+              Aún no has agregado municipios de cobertura.
+            </p>
+
+            <!-- Tipo de organización (obligatorio) -->
+            <div class="section-header" style="margin-top:16px">
+              TIPO DE ORGANIZACIÓN <span class="badge-obligatorio">Obligatorio</span>
+            </div>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Tipo de organización</mat-label>
+              <mat-select formControlName="tipoOrg">
+                <mat-option *ngFor="let t of tiposOrg" [value]="t">{{ t }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- ODS Top 3 (obligatorio) -->
+            <div class="section-header" style="margin-top:8px">
+              TOP 3 ODS <span class="badge-obligatorio">Obligatorio</span>
+            </div>
+            <p class="tab-desc" style="margin-bottom:12px">
+              Selecciona hasta 3 Objetivos de Desarrollo Sostenible con los que trabaja tu organización.
+            </p>
+            <div class="ods-grid">
+              <div class="ods-item"
+                   *ngFor="let ods of ODS_LIST"
+                   [class.ods-selected]="odsSeleccionado(ods.id)"
+                   [class.ods-disabled]="!odsSeleccionado(ods.id) && odsSeleccionados.length >= 3"
+                   (click)="toggleOds(ods.id)"
+                   [matTooltip]="ods.nombre">
+                <img [src]="ods.img" [alt]="ods.nombre" class="ods-img">
+              </div>
+            </div>
+
+            <!-- Página web (opcional + toggle) -->
+            <div class="section-header" style="margin-top:16px">
+              PÁGINA WEB <span class="badge-opcional">Opcional</span>
+            </div>
+            <div class="campo-toggle-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>URL Página web</mat-label>
+                <input matInput formControlName="paginaWeb" placeholder="https://www.miorganizacion.org">
+              </mat-form-field>
+              <mat-slide-toggle
+                [(ngModel)]="toggles.paginaWeb"
+                [ngModelOptions]="{standalone:true}"
+                (change)="onToggleChange('paginaWeb')"
+                color="primary">
+                <span class="toggle-estado">{{ toggles.paginaWeb ? '👁 Público' : '🔒 Privado' }}</span>
+              </mat-slide-toggle>
+            </div>
+
+            <!-- Red social (opcional + toggle) -->
+            <div class="section-header">
+              RED SOCIAL PRINCIPAL <span class="badge-opcional">Opcional</span>
+            </div>
+            <div class="campo-toggle-row">
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Link directo a red social</mat-label>
+                <input matInput formControlName="redSocial" placeholder="https://instagram.com/miorganizacion">
+              </mat-form-field>
+              <mat-slide-toggle
+                [(ngModel)]="toggles.redSocial"
+                [ngModelOptions]="{standalone:true}"
+                (change)="onToggleChange('redSocial')"
+                color="primary">
+                <span class="toggle-estado">{{ toggles.redSocial ? '👁 Público' : '🔒 Privado' }}</span>
+              </mat-slide-toggle>
+            </div>
+
+            <!-- Alianzas exitosas (opcional + toggle) -->
+            <div class="section-header">
+              ALIANZAS EXITOSAS
+              <span class="badge-opcional">Opcional</span>
+              <span class="badge-max">Máx. 4</span>
+            </div>
+            <div class="campo-toggle-row" style="margin-bottom:12px">
+              <span class="campo-toggle-label" style="flex:1">Mostrar alianzas en mi perfil público</span>
+              <mat-slide-toggle
+                [(ngModel)]="toggles.alianzas"
+                [ngModelOptions]="{standalone:true}"
+                (change)="onToggleChange('alianzas')"
+                color="primary">
+                <span class="toggle-estado">{{ toggles.alianzas ? '👁 Público' : '🔒 Privado' }}</span>
+              </mat-slide-toggle>
+            </div>
+
+            <!-- Tarjetas de alianzas -->
+            <div class="alianzas-list" *ngIf="alianzas.length > 0">
+              <div class="alianza-card" *ngFor="let a of alianzas; let i = index">
+                <div class="alianza-card-header">
+                  <span class="alianza-num">Alianza {{ i + 1 }}</span>
+                  <button mat-icon-button class="alianza-remove-btn" (click)="eliminarAlianza(i)"
+                          matTooltip="Eliminar alianza">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Nombre del aliado</mat-label>
+                  <input matInput [(ngModel)]="a.nombre" [ngModelOptions]="{standalone:true}"
+                         placeholder="Ej: Bancolombia">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Objeto de la alianza</mat-label>
+                  <input matInput [(ngModel)]="a.objeto" [ngModelOptions]="{standalone:true}"
+                         placeholder="Ej: Capacitación financiera a comunidades">
+                </mat-form-field>
+                <div class="form-row">
+                  <mat-form-field appearance="outline" class="flex-grow">
+                    <mat-label>Fecha inicio</mat-label>
+                    <input matInput type="date" [(ngModel)]="a.fechaInicio" [ngModelOptions]="{standalone:true}">
+                  </mat-form-field>
+                  <mat-form-field appearance="outline" class="flex-grow" [class.disabled-field]="a.vigente">
+                    <mat-label>Fecha fin</mat-label>
+                    <input matInput type="date" [(ngModel)]="a.fechaFin" [ngModelOptions]="{standalone:true}"
+                           [disabled]="a.vigente">
+                  </mat-form-field>
+                </div>
+                <mat-checkbox [(ngModel)]="a.vigente" [ngModelOptions]="{standalone:true}" color="primary">
+                  Vigente actualmente
+                </mat-checkbox>
+              </div>
+            </div>
+
+            <button mat-stroked-button class="add-alianza-btn"
+                    *ngIf="puedeAgregarAlianza"
+                    (click)="agregarAlianza()">
+              <mat-icon>add</mat-icon> Agregar alianza
+            </button>
+            <p class="campo-hint" *ngIf="!puedeAgregarAlianza">
+              Has alcanzado el máximo de 4 alianzas.
+            </p>
+
+          </form>
+        </div>
+      </mat-tab>
+
+      <!-- ══════════════════════════════════
+           PESTAÑA 3 — VISTA PREVIA
+      ═══════════════════════════════════ -->
+      <mat-tab label="👤 Vista Previa">
+        <div class="tab-content">
+          <p class="tab-desc">Así verán tu perfil las empresas aliadas y voluntarios.</p>
+
+          <div class="vista-previa-card">
+
+            <!-- Encabezado -->
+            <div class="vp-header">
+              <div class="vp-logo-wrap">
+                <img *ngIf="logoPreview" [src]="logoPreview" class="vp-logo-img">
+                <div *ngIf="!logoPreview" class="vp-logo-placeholder">
+                  {{ datosNoEditables.razonSocial.charAt(0) }}
+                </div>
+              </div>
+              <div class="vp-header-info">
+                <h2 class="vp-nombre">{{ datosNoEditables.razonSocial }}</h2>
+                <span class="vp-tipo" *ngIf="formTab2.get('tipoOrg')?.value">
+                  {{ formTab2.get('tipoOrg')?.value }}
+                </span>
+                <div class="vp-nivel">
+                  {{ nivelIcono }} <strong>{{ datosDiagnostico.nivel }}</strong>
+                  · {{ datosDiagnostico.puntaje }} pts
+                </div>
+              </div>
+            </div>
+
+            <!-- ODS Top 3 -->
+            <div class="vp-seccion" *ngIf="odsTop3Items.length > 0">
+              <div class="vp-seccion-titulo">TOP 3 ODS</div>
+              <div class="vp-ods-list">
+                <div class="vp-ods-item" *ngFor="let ods of odsTop3Items">
+                  <img [src]="ods.img" [alt]="ods.nombre" class="vp-ods-img">
+                  <span class="vp-ods-nombre">{{ ods.nombre }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cobertura -->
+            <div class="vp-seccion" *ngIf="coberturaSeleccionada.length > 0">
+              <div class="vp-seccion-titulo">COBERTURA</div>
+              <div class="chips-wrap">
+                <span class="chip chip-readonly" *ngFor="let m of coberturaSeleccionada">{{ m }}</span>
+              </div>
+            </div>
+
+            <!-- Opcionales activados -->
+            <div class="vp-seccion" *ngIf="toggles.paginaWeb && formTab2.get('paginaWeb')?.value">
+              <div class="vp-seccion-titulo">PÁGINA WEB</div>
+              <a class="vp-link" [href]="formTab2.get('paginaWeb')?.value" target="_blank">
+                {{ formTab2.get('paginaWeb')?.value }}
+              </a>
+            </div>
+
+            <div class="vp-seccion" *ngIf="toggles.redSocial && formTab2.get('redSocial')?.value">
+              <div class="vp-seccion-titulo">RED SOCIAL</div>
+              <a class="vp-link" [href]="formTab2.get('redSocial')?.value" target="_blank">
+                {{ formTab2.get('redSocial')?.value }}
+              </a>
+            </div>
+
+            <!-- Alianzas -->
+            <div class="vp-seccion" *ngIf="toggles.alianzas && alianzas.length > 0">
+              <div class="vp-seccion-titulo">ALIANZAS EXITOSAS</div>
+              <div class="vp-alianzas-list">
+                <div class="vp-alianza-card" *ngFor="let a of alianzas">
+                  <span class="vp-alianza-nombre">{{ a.nombre || '—' }}</span>
+                  <span class="vp-alianza-objeto">{{ a.objeto }}</span>
+                  <span class="vp-alianza-fecha">
+                    {{ a.fechaInicio || '—' }} →
+                    {{ a.vigente ? 'Vigente' : (a.fechaFin || '—') }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nivel barra de puntaje -->
+            <div class="vp-seccion">
+              <div class="vp-seccion-titulo">NIVEL DE MADUREZ</div>
+              <div class="nivel-barra-wrap">
+                <span class="nivel-label">{{ datosDiagnostico.nivel }}</span>
+                <div class="nivel-barra-track">
+                  <div class="nivel-barra-fill"
+                       [style.width.%]="(datosDiagnostico.puntaje / 200) * 100">
+                  </div>
+                </div>
+                <span class="nivel-pts">{{ datosDiagnostico.puntaje }} / 200 pts</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Botón publicar -->
+          <div class="tab-actions">
+            <button mat-flat-button class="fbd-button fbd-button-lg" type="button"
+                    (click)="publicarPerfil()">
+              🚀 Publicar Perfil
+            </button>
+          </div>
+
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </mat-card>
+
+</div>
