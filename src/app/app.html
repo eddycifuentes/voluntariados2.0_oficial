@@ -118,11 +118,20 @@
               <input matInput formControlName="repNombre">
               <mat-error>{{ getFieldError(step1BasicInfo, 'repNombre') }}</mat-error>
             </mat-form-field>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Número de Documento</mat-label>
-              <input matInput formControlName="repDoc" type="text" inputmode="numeric">
-              <mat-error>{{ getFieldError(step1BasicInfo, 'repDoc') }}</mat-error>
-            </mat-form-field>
+            <div class="form-row">
+              <mat-form-field appearance="outline" style="flex: 0 0 110px;">
+                <mat-label>Tipo Doc.</mat-label>
+                <mat-select formControlName="repTipoDoc">
+                  <mat-option *ngFor="let t of tiposDoc" [value]="t">{{ t }}</mat-option>
+                </mat-select>
+                <mat-error>{{ getFieldError(step1BasicInfo, 'repTipoDoc') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="flex-grow">
+                <mat-label>Número de Documento</mat-label>
+                <input matInput formControlName="repDoc" type="text" inputmode="numeric">
+                <mat-error>{{ getFieldError(step1BasicInfo, 'repDoc') }}</mat-error>
+              </mat-form-field>
+            </div>
             <div class="form-row">
               <mat-form-field appearance="outline" class="flex-grow">
                 <mat-label>Correo corporativo</mat-label>

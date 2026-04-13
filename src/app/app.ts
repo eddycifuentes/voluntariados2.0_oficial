@@ -284,6 +284,7 @@ export class AppComponent implements OnInit {
       nit:              [''],
       razonSocial:      [''],
       repNombre:        [''],
+      repTipoDoc:       ['CC'],
       repDoc:           [''],
       repEmail:         [''],
       repCelular:       [''],
@@ -316,7 +317,7 @@ export class AppComponent implements OnInit {
     this.step1BasicInfo.reset({
       tipoDoc: 'CC',
       nit: '', razonSocial: '',
-      repNombre: '', repDoc: '', repEmail: '', repCelular: '',
+      repNombre: '', repTipoDoc: 'CC', repDoc: '', repEmail: '', repCelular: '',
       gestorNombre: '', gestorCargo: '', gestorArea: '',
       gestorEmail: '', gestorCelular: '',
       fechaNacimiento: '', eps: '',
@@ -373,6 +374,7 @@ export class AppComponent implements OnInit {
     } else {
       c['nit'].setValidators([Validators.required, Validators.pattern(/^\d{9}$/)]);
       c['repNombre'].setValidators([Validators.required]);
+      c['repTipoDoc'].setValidators([Validators.required]);
       c['repDoc'].setValidators([Validators.required]);
       c['repEmail'].setValidators([Validators.required, Validators.email]);
       c['repCelular'].setValidators([Validators.required]);
