@@ -212,7 +212,7 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
       tipoSeleccion: 'unica',
       opciones: [
         { texto: 'Trabajamos de forma independiente y aislada.',                                          puntos: 2, nivelAlcanzado: 0 },
-        { texto: 'Pertenecemos a redes de ONGs.',                                                         puntos: 5, niveleAlcanzado: 1 },
+        { texto: 'Pertenecemos a redes de ONGs.',                                                         puntos: 5, nivelAlcanzado: 1 },
         { texto: 'Liderazgo en red: Lideramos mesas de trabajo sectoriales o alianzas público-privadas.',puntos: 10, nivelAlcanzado: 2 },
       ],
     },

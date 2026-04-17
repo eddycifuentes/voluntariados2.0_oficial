@@ -1,624 +1,528 @@
 <div class="main-container">
 
-  <!-- HEADER (siempre visible) -->
+  <!-- HEADER -->
   <header class="fbd-header">
     <img src="logo-fbd.png" alt="Fundación Bolívar Davivienda" class="fbd-logo">
     <span class="fbd-tagline">Plataforma de Voluntariado Corporativo</span>
   </header>
 
   <!-- ══ ONBOARDING ══ -->
-  <ng-container *ngIf="!mostrarPerfil">
+  <ng-container *ngIf="!mostrarPerfil && !mostrarCredenciales">
 
-  <!-- SELECCIÓN DE ACTOR -->
-  <div class="actor-selector" *ngIf="!selectedActor">
-    <h1 class="selector-title">¿Cómo quieres registrarte?</h1>
-    <p class="selector-sub">Selecciona tu tipo de usuario para comenzar</p>
-    <div class="actor-cards">
-      <button
-        *ngFor="let actor of actors"
-        class="actor-card"
-        (click)="onActorSelect(actor.value)"
-        type="button">
-        <span class="actor-card-title">{{ actor.value }}</span>
-        <span class="actor-card-desc">{{ actor.desc }}</span>
-      </button>
+    <!-- SELECCIÓN DE ACTOR -->
+    <div class="actor-selector" *ngIf="!selectedActor">
+      <h1 class="selector-title">¿Cómo quieres registrarte?</h1>
+      <p class="selector-sub">Selecciona tu tipo de usuario para comenzar</p>
+      <div class="actor-cards">
+        <button
+          *ngFor="let actor of actors"
+          class="actor-card"
+          (click)="onActorSelect(actor.value)"
+          type="button">
+          <span class="actor-card-title">{{ actor.value }}</span>
+          <span class="actor-card-desc">{{ actor.desc }}</span>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <!-- STEPPER PRINCIPAL -->
-  <mat-card class="onboarding-card" *ngIf="selectedActor">
+    <!-- STEPPER PRINCIPAL -->
+    <mat-card class="onboarding-card" *ngIf="selectedActor">
 
-    <button mat-button class="back-btn" (click)="selectedActor = ''" type="button">
-      ← Cambiar tipo de usuario
-    </button>
+      <button mat-button class="back-btn" (click)="selectedActor = ''" type="button">
+        ← Cambiar tipo de usuario
+      </button>
 
-    <mat-stepper linear #stepper labelPosition="bottom" class="fbd-stepper">
-
-      <!-- ══════════════════════════════════════════════
-           STEP 1 — INFORMACIÓN BÁSICA
-      ═══════════════════════════════════════════════ -->
-      <mat-step [stepControl]="step1BasicInfo" label="Información Básica">
-        <form [formGroup]="step1BasicInfo" class="step-form">
-
-          <div class="form-section-header"><span>DATOS DE IDENTIFICACIÓN</span></div>
-
-          <!-- Voluntario: Tipo doc + cédula -->
-          <ng-container *ngIf="esVoluntario">
-            <div class="form-row">
-              <mat-form-field appearance="outline" style="flex: 0 0 110px;">
-                <mat-label>Tipo Doc.</mat-label>
-                <mat-select formControlName="tipoDoc">
-                  <mat-option *ngFor="let t of tiposDoc" [value]="t">{{ t }}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Número de Documento</mat-label>
-                <input matInput formControlName="nit" type="text"
-                       inputmode="numeric" maxlength="11"
-                       (blur)="verificarVoluntario()">
-                <mat-hint>Entre 6 y 11 dígitos</mat-hint>
-                <mat-error>{{ getFieldError(step1BasicInfo, 'nit') }}</mat-error>
-              </mat-form-field>
-            </div>
-          </ng-container>
-
-          <!-- OS / Empresa: NIT -->
-          <mat-form-field appearance="outline" class="full-width" *ngIf="!esVoluntario">
-            <mat-label>NIT (9 dígitos, sin dígito de verificación)</mat-label>
-            <input matInput formControlName="nit" type="text" inputmode="numeric" maxlength="9">
-            <mat-error>{{ getFieldError(step1BasicInfo, 'nit') }}</mat-error>
-          </mat-form-field>
-
-          <!-- Razón Social / Nombre -->
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>{{ esVoluntario ? 'Nombres y Apellidos completos' : 'Razón Social' }}</mat-label>
-            <input matInput formControlName="razonSocial">
-            <mat-error>{{ getFieldError(step1BasicInfo, 'razonSocial') }}</mat-error>
-          </mat-form-field>
-
-          <!-- Datos adicionales Voluntario -->
-          <ng-container *ngIf="esVoluntario">
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Fecha de Nacimiento</mat-label>
-                <input matInput type="date" formControlName="fechaNacimiento">
-                <mat-error>{{ getFieldError(step1BasicInfo, 'fechaNacimiento') }}</mat-error>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>EPS</mat-label>
-                <mat-select formControlName="eps">
-                  <mat-option *ngFor="let e of epsList" [value]="e">{{ e }}</mat-option>
-                </mat-select>
-                <mat-error>{{ getFieldError(step1BasicInfo, 'eps') }}</mat-error>
-              </mat-form-field>
-            </div>
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Departamento</mat-label>
-                <mat-select formControlName="departamento" (selectionChange)="onDepartamentoChange()">
-                  <mat-option *ngFor="let d of departamentos" [value]="d">{{ d }}</mat-option>
-                </mat-select>
-                <mat-error>{{ getFieldError(step1BasicInfo, 'departamento') }}</mat-error>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Municipio</mat-label>
-                <mat-select formControlName="municipio" [disabled]="municipios.length === 0">
-                  <mat-option *ngFor="let m of municipios" [value]="m">{{ m }}</mat-option>
-                </mat-select>
-                <mat-error>{{ getFieldError(step1BasicInfo, 'municipio') }}</mat-error>
-              </mat-form-field>
-            </div>
-          </ng-container>
-
-          <!-- Representante Legal (OS / Empresa) -->
-          <ng-container *ngIf="!esVoluntario">
-            <div class="form-section-header"><span>DATOS DEL REPRESENTANTE LEGAL</span></div>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nombres y Apellidos completos</mat-label>
-              <input matInput formControlName="repNombre">
-              <mat-error>{{ getFieldError(step1BasicInfo, 'repNombre') }}</mat-error>
-            </mat-form-field>
-            <div class="form-row">
-              <mat-form-field appearance="outline" style="flex: 0 0 110px;">
-                <mat-label>Tipo Doc.</mat-label>
-                <mat-select formControlName="repTipoDoc">
-                  <mat-option *ngFor="let t of tiposDoc" [value]="t">{{ t }}</mat-option>
-                </mat-select>
-                <mat-error>{{ getFieldError(step1BasicInfo, 'repTipoDoc') }}</mat-error>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Número de Documento</mat-label>
-                <input matInput formControlName="repDoc" type="text" inputmode="numeric">
-                <mat-error>{{ getFieldError(step1BasicInfo, 'repDoc') }}</mat-error>
-              </mat-form-field>
-            </div>
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Correo corporativo</mat-label>
-                <input matInput formControlName="repEmail" type="email">
-                <mat-error>{{ getFieldError(step1BasicInfo, 'repEmail') }}</mat-error>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Celular</mat-label>
-                <input matInput formControlName="repCelular" type="tel">
-                <mat-error>{{ getFieldError(step1BasicInfo, 'repCelular') }}</mat-error>
-              </mat-form-field>
-            </div>
-          </ng-container>
-
-          <!-- Gestor de Voluntariado (OS / Empresa) -->
-          <ng-container *ngIf="!esVoluntario">
-            <div class="form-section-header"><span>GESTOR DE VOLUNTARIADO</span></div>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Nombres y Apellidos</mat-label>
-              <input matInput formControlName="gestorNombre">
-              <mat-error>{{ getFieldError(step1BasicInfo, 'gestorNombre') }}</mat-error>
-            </mat-form-field>
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Cargo</mat-label>
-                <input matInput formControlName="gestorCargo" placeholder="Ej: Coordinador de Voluntariado">
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Área encargada</mat-label>
-                <input matInput formControlName="gestorArea">
-              </mat-form-field>
-            </div>
-            <div class="form-row">
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Correo institucional</mat-label>
-                <input matInput formControlName="gestorEmail" type="email">
-                <mat-error>{{ getFieldError(step1BasicInfo, 'gestorEmail') }}</mat-error>
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="flex-grow">
-                <mat-label>Celular de contacto</mat-label>
-                <input matInput formControlName="gestorCelular" type="tel">
-                <mat-error>{{ getFieldError(step1BasicInfo, 'gestorCelular') }}</mat-error>
-              </mat-form-field>
-            </div>
-          </ng-container>
-
-          <!-- Datos de Contacto (solo Voluntario) -->
-          <ng-container *ngIf="esVoluntario">
-            <div class="form-section-header"><span>DATOS DE CONTACTO</span></div>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Correo Electrónico</mat-label>
-              <input matInput formControlName="email" type="email">
-              <mat-error>{{ getFieldError(step1BasicInfo, 'email') }}</mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Número de Celular</mat-label>
-              <input matInput formControlName="celular" type="tel" inputmode="numeric">
-              <mat-error>{{ getFieldError(step1BasicInfo, 'celular') }}</mat-error>
-            </mat-form-field>
-          </ng-container>
-
-          <div class="step-actions">
-            <button mat-flat-button class="fbd-button" matStepperNext
-                    (click)="guardarProgreso()"
-                    [disabled]="step1BasicInfo.invalid" type="button">
-              SIGUIENTE →
-            </button>
+      <!-- ══ TABLERO DE AVANCE ══ -->
+      <div class="tablero-avance">
+        <!-- ONG / Empresa: 4 etapas -->
+        <ng-container *ngIf="!esVoluntario">
+          <div class="etapa" [class.activa]="stepActual >= 1" [class.completada]="stepActual > 1">
+            <div class="etapa-circulo">{{ stepActual > 1 ? '✓' : '1' }}</div>
+            <span class="etapa-label">Información Básica y TyC</span>
           </div>
-
-        </form>
-      </mat-step>
-
-      <!-- ══════════════════════════════════════════════
-           STEP 2
-           · Voluntario  → TyC
-           · Org/Empresa → Documentos + SARLAFT
-      ═══════════════════════════════════════════════ -->
-      <mat-step [label]="stepLabel2" [stepControl]="esVoluntario ? step3Tyc : step2Docs">
-
-        <!-- ── VOLUNTARIO: TyC ── -->
-        <div class="step-form" *ngIf="esVoluntario">
-          <div class="step-intro">
-            <h2>Tratamiento de Datos y Términos</h2>
-            <p>Lee y acepta los documentos antes de continuar.</p>
+          <div class="etapa-linea" [class.activa]="stepActual > 1"></div>
+          <div class="etapa" [class.activa]="stepActual >= 2" [class.completada]="stepActual > 2">
+            <div class="etapa-circulo">{{ stepActual > 2 ? '✓' : '2' }}</div>
+            <span class="etapa-label">Cargue de Documentos</span>
           </div>
-          <div class="tyc-block" [formGroup]="step3Tyc">
-            <div class="tyc-item">
-              <mat-checkbox formControlName="aceptaTyc" color="primary">
-                He leído y acepto los
-                <a href="#" target="_blank" class="tyc-link">Términos y Condiciones</a>
-                de la Fundación Bolívar Davivienda.
-              </mat-checkbox>
-            </div>
-            <div class="tyc-item">
-              <mat-checkbox formControlName="aceptaDatos" color="primary">
-                He leído y acepto la
-                <a href="#" target="_blank" class="tyc-link">Política de Tratamiento de Datos</a>
-                de la Fundación Bolívar Davivienda.
-              </mat-checkbox>
-            </div>
-            <div class="step-actions">
-              <button mat-flat-button class="fbd-button" matStepperNext
-                      (click)="guardarProgreso()"
-                      [disabled]="step3Tyc.invalid" type="button">
-                SIGUIENTE →
-              </button>
-            </div>
+          <div class="etapa-linea" [class.activa]="stepActual > 2"></div>
+          <div class="etapa" [class.activa]="stepActual >= 3" [class.completada]="stepActual > 3">
+            <div class="etapa-circulo">{{ stepActual > 3 ? '✓' : '3' }}</div>
+            <span class="etapa-label">Diagnóstico de Madurez</span>
           </div>
-        </div>
-
-        <!-- ── ORG / EMPRESA: DOCUMENTOS + SARLAFT ── -->
-        <div class="step-form" *ngIf="!esVoluntario">
-
-          <!-- ── SECCIÓN A: Carga de documentos ── -->
-          <div class="step-intro">
-            <h2>Cargue de Documentos</h2>
-            <p>Sube cada documento en formato <strong>PDF</strong> (máx. 10MB). La verificación es automática.</p>
+          <div class="etapa-linea" [class.activa]="stepActual > 3"></div>
+          <div class="etapa" [class.activa]="stepActual >= 4">
+            <div class="etapa-circulo">4</div>
+            <span class="etapa-label">{{ esOrganizacion ? 'Perfil de la ONG' : 'Perfil de la Empresa' }}</span>
           </div>
+        </ng-container>
 
-          <div class="doc-resumen" *ngIf="algunDocumentoCargado">
-            <span class="doc-resumen-item" *ngFor="let doc of documentos">
-              <span [class]="'punto-estado ' + getEstadoClass(doc.estado)"></span>
-              {{ doc.nombre }}: <strong>{{ getEstadoLabel(doc.estado) }}</strong>
-            </span>
+        <!-- Voluntario: 3 etapas -->
+        <ng-container *ngIf="esVoluntario">
+          <div class="etapa" [class.activa]="stepActual >= 1" [class.completada]="stepActual > 1">
+            <div class="etapa-circulo">{{ stepActual > 1 ? '✓' : '1' }}</div>
+            <span class="etapa-label">Información Básica y TyC</span>
           </div>
-
-          <div class="doc-upload-list">
-            <div class="doc-upload-item" *ngFor="let doc of documentos; let i = index"
-                 [class.doc-verificado]="doc.estado === 'verificado'"
-                 [class.doc-rechazado]="doc.estado === 'rechazado'">
-              <div class="doc-info">
-                <strong>{{ doc.nombre }}</strong>
-                <span class="doc-vigencia">{{ doc.vigencia }}</span>
-                <span class="doc-archivo" *ngIf="doc.archivo">📄 {{ doc.archivo.name }}</span>
-              </div>
-              <div class="doc-acciones">
-                <span class="estado-badge" [class]="getEstadoClass(doc.estado)"
-                      *ngIf="doc.estado !== 'sin_cargar'">
-                  {{ getEstadoLabel(doc.estado) }}
-                </span>
-                <div class="doc-spinner" *ngIf="doc.estado === 'verificando'">
-                  <mat-progress-bar mode="indeterminate" class="verificando-bar"></mat-progress-bar>
-                </div>
-                <label class="upload-btn"
-                       *ngIf="doc.estado === 'sin_cargar' || doc.estado === 'rechazado'">
-                  {{ doc.estado === 'rechazado' ? 'Reintentar' : 'Subir PDF' }}
-                  <input type="file" accept="application/pdf" hidden
-                         (change)="onArchivoSeleccionado($event, i)">
-                </label>
-                <button class="eliminar-btn" type="button"
-                        *ngIf="doc.estado === 'pendiente' || doc.estado === 'verificado'"
-                        (click)="eliminarDocumento(i)">✕</button>
-              </div>
-            </div>
+          <div class="etapa-linea" [class.activa]="stepActual > 1"></div>
+          <div class="etapa" [class.activa]="stepActual >= 2" [class.completada]="stepActual > 2">
+            <div class="etapa-circulo">{{ stepActual > 2 ? '✓' : '2' }}</div>
+            <span class="etapa-label">Diagnóstico de Madurez</span>
           </div>
-
-          <div class="doc-nota">
-            <strong>ℹ️ ¿Cómo funciona la verificación?</strong><br>
-            Una vez cargado el PDF, el sistema lo revisa automáticamente.
-            Si un documento es rechazado, podrás cargarlo nuevamente.
-            El equipo de la Fundación validará los resultados finales.
+          <div class="etapa-linea" [class.activa]="stepActual > 2"></div>
+          <div class="etapa" [class.activa]="stepActual >= 3">
+            <div class="etapa-circulo">3</div>
+            <span class="etapa-label">Perfil del Voluntario</span>
           </div>
+        </ng-container>
+      </div>
 
-          <!-- ══════════════════════════════════════════
-               SECCIÓN B: SARLAFT (aparece tras verificar docs)
-          ═══════════════════════════════════════════ -->
-          <div class="sarlaft-section" [class.sarlaft-bloqueado]="!sarlaftPuedeConsultar">
+      <mat-stepper linear #stepper labelPosition="bottom" class="fbd-stepper">
 
-            <div class="sarlaft-divider">
-              <span class="sarlaft-divider-label">VERIFICACIÓN DE LISTAS RESTRICTIVAS</span>
-            </div>
+        <!-- ══════════════════════════════════════════════
+             STEP 1 — INFORMACIÓN BÁSICA + TyC (todos los actores)
+             Bloques: 1 → Identificación, 2 → Rep. Legal,
+                      3 → Gestor / Contacto, 4 → TyC
+        ═══════════════════════════════════════════════ -->
+        <mat-step [stepControl]="step1BasicInfo" label="Información Básica y TyC">
+          <form [formGroup]="step1BasicInfo" class="step-form">
 
-            <!-- Estado: bloqueado (docs no verificados aún) -->
-            <div class="sarlaft-card sarlaft-card--bloqueado" *ngIf="!sarlaftPuedeConsultar">
-              <div class="sarlaft-icon">🔒</div>
-              <p class="sarlaft-texto">
-                La consulta SARLAFT se habilitará automáticamente una vez que
-                <strong>todos los documentos estén verificados</strong>.
-              </p>
-            </div>
-
-            <!-- Estado: pendiente (docs listos, aún no consultó) -->
-            <div class="sarlaft-card sarlaft-card--pendiente"
-                 *ngIf="sarlaftPuedeConsultar && sarlaftEstado === 'pendiente'">
-              <div class="sarlaft-icon">🛡️</div>
-              <h3 class="sarlaft-titulo">Consulta en listas restrictivas</h3>
-              <p class="sarlaft-texto">
-                El sistema verificará que tu organización no figure en listas de control
-                financiero (SARLAFT/LAFT). Este proceso es obligatorio y automático.
-              </p>
-              <button mat-flat-button class="fbd-button sarlaft-btn"
-                      type="button" (click)="iniciarConsultaSarlaft()">
-                Iniciar verificación
-              </button>
-            </div>
-
-            <!-- Estado: consultando (spinner) -->
-            <div class="sarlaft-card sarlaft-card--consultando"
-                 *ngIf="sarlaftEstado === 'consultando'">
-              <div class="sarlaft-icon">⏳</div>
-              <h3 class="sarlaft-titulo">Verificando...</h3>
-              <p class="sarlaft-texto">Consultando listas restrictivas para <strong>{{ sarlaftNombre }}</strong>.</p>
-              <mat-progress-bar mode="indeterminate" class="sarlaft-progress"></mat-progress-bar>
-            </div>
-
-            <!-- Estado: sin novedad ✅ -->
-            <div class="sarlaft-card sarlaft-card--ok"
-                 *ngIf="sarlaftEstado === 'sin_novedad'">
-              <div class="sarlaft-icon">✅</div>
-              <h3 class="sarlaft-titulo">Verificación superada</h3>
-              <p class="sarlaft-texto">
-                No se encontraron coincidencias en listas restrictivas.
-                Ya puedes continuar con el proceso.
-              </p>
-            </div>
-
-            <!-- Estado: con novedad ⚠️ -->
-            <div class="sarlaft-card sarlaft-card--novedad"
-                 *ngIf="sarlaftEstado === 'con_novedad'">
-              <div class="sarlaft-icon">⚠️</div>
-              <h3 class="sarlaft-titulo">Protocolo de seguridad pendiente</h3>
-              <p class="sarlaft-texto">
-                Los datos proporcionados no superan los estándares técnicos de validación.
-                Escribe a
-                <a href="mailto:soporte@fundacionbolivar.org" class="tyc-link">
-                  soporte@fundacionbolivar.org
-                </a>
-                para más información.
-              </p>
-              <p class="sarlaft-nota">
-                Tu registro quedará <strong>En Proceso</strong> mientras el equipo de
-                cumplimiento revisa tu caso.
-              </p>
-            </div>
-
-          </div><!-- /sarlaft-section -->
-
-          <!-- Botón Siguiente: solo habilitado si SARLAFT pasó -->
-          <div class="step-actions">
-            <button mat-flat-button class="fbd-button" matStepperNext
-                    (click)="guardarProgreso()"
-                    [disabled]="!sarlaftPuedeAvanzar"
-                    type="button">
-              SIGUIENTE →
-            </button>
-          </div>
-
-        </div><!-- /OS / EMPRESA -->
-
-      </mat-step>
-
-      <!-- ══════════════════════════════════════════════
-           STEP 3
-           · Voluntario  → Listas Restrictivas (SARLAFT)
-           · Org/Empresa → TyC
-      ═══════════════════════════════════════════════ -->
-      <mat-step [label]="stepLabel3" [stepControl]="esVoluntario ? step2Docs : step3Tyc">
-
-        <!-- VOLUNTARIO → SARLAFT -->
-        <div class="step-form" *ngIf="esVoluntario">
-          <div class="step-intro">
-            <h2>Consulta en Listas Restrictivas</h2>
-            <p>El sistema realizará automáticamente una consulta SARLAFT para verificar tu identidad.</p>
-          </div>
-          <div class="sarlaft-status">
-            <strong>Estado:</strong> Verificación en proceso
-            <p class="status-msg">
-              Recibirás una notificación una vez se complete la consulta.
-              Este proceso es automático y necesario para garantizar la seguridad de todas las partes.
-            </p>
-          </div>
-          <div class="step-actions">
-            <button mat-flat-button class="fbd-button" matStepperNext
-                    (click)="guardarProgreso()" type="button">
-              CONTINUAR →
-            </button>
-          </div>
-        </div>
-
-        <!-- OS / EMPRESA → TyC -->
-        <div class="step-form" *ngIf="!esVoluntario">
-          <div class="step-intro">
-            <h2>Tratamiento de Datos y Términos</h2>
-            <p>Lee y acepta los documentos antes de continuar.</p>
-          </div>
-          <div class="tyc-block" [formGroup]="step3Tyc">
-            <div class="tyc-item">
-              <mat-checkbox formControlName="aceptaTyc" color="primary">
-                He leído y acepto los
-                <a href="#" target="_blank" class="tyc-link">Términos y Condiciones</a>
-                de la Fundación Bolívar Davivienda.
-              </mat-checkbox>
-            </div>
-            <div class="tyc-item">
-              <mat-checkbox formControlName="aceptaDatos" color="primary">
-                He leído y acepto la
-                <a href="#" target="_blank" class="tyc-link">Política de Tratamiento de Datos</a>
-                de la Fundación Bolívar Davivienda.
-              </mat-checkbox>
-            </div>
-            <div class="step-actions">
-              <button mat-flat-button class="fbd-button" matStepperNext
-                      (click)="guardarProgreso()"
-                      [disabled]="step3Tyc.invalid" type="button">
-                SIGUIENTE →
-              </button>
-            </div>
-          </div>
-        </div>
-
-      </mat-step>
-
-      <!-- ══════════════════════════════════════════════
-           STEP 4 — DIAGNÓSTICO DE MADUREZ
-      ═══════════════════════════════════════════════ -->
-      <mat-step label="Diagnóstico" [stepControl]="step4Diag">
-        <div class="step-form diag-step">
-
-          <!-- Resultado final -->
-          <div class="diag-resultado" *ngIf="diagCompletado && diagNivelResultado">
-            <div class="diag-nivel-badge">
-              <div class="diag-trofeo">🏆</div>
-              <h2 class="diag-nivel-nombre">{{ diagNivelResultado.nombre }}</h2>
-              <p class="diag-nivel-desc">{{ diagNivelResultado.descripcion }}</p>
-              <div class="diag-puntaje">{{ diagPuntajeTotal }} pts</div>
-            </div>
-            <p class="diag-mensaje">{{ diagNivelResultado.mensajeBienvenida }}</p>
-            <div class="diag-recomendaciones">
-              <h3>Recomendaciones para ti:</h3>
-              <ul>
-                <li *ngFor="let r of diagNivelResultado.recomendaciones">{{ r }}</li>
-              </ul>
-            </div>
-            <button mat-flat-button class="fbd-button fbd-button-lg" (click)="irAlPerfil()" type="button">
-              ✏️ Ir a mi Perfil
-            </button>
-          </div>
-
-          <!-- Cuestionario -->
-          <ng-container *ngIf="!diagCompletado && diagPregunta">
-
-            <div class="diag-header">
-              <span class="diag-titulo">{{ diagConfig?.titulo }}</span>
-              <span class="diag-progreso-label">
-                {{ diagPreguntaActual + 1 }} / {{ diagConfig?.preguntas?.length }}
+            <!-- ── BLOQUE 1: IDENTIFICACIÓN ── -->
+            <div class="bloque-header">
+              <span class="bloque-numero">1</span>
+              <span class="bloque-titulo">
+                {{ esVoluntario ? 'Datos Básicos del Voluntario' : 'Datos de Identificación' }}
               </span>
             </div>
-            <mat-progress-bar mode="determinate" [value]="diagProgresoPct" class="diag-progress-bar">
-            </mat-progress-bar>
 
-            <div class="diag-card">
-              <div class="diag-dimension">{{ diagPregunta.dimension }}</div>
-              <h3 class="diag-pregunta">{{ diagPregunta.pregunta }}</h3>
-              <p class="diag-nota" *ngIf="diagPregunta.notaSubtitulo">{{ diagPregunta.notaSubtitulo }}</p>
+            <!-- Voluntario: Tipo doc + cédula -->
+            <ng-container *ngIf="esVoluntario">
+              <div class="form-row">
+                <mat-form-field appearance="outline" style="flex: 0 0 110px;">
+                  <mat-label>Tipo Doc.</mat-label>
+                  <mat-select formControlName="tipoDoc">
+                    <mat-option *ngFor="let t of tiposDoc" [value]="t">{{ t }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Número de Documento</mat-label>
+                  <input matInput formControlName="nit" type="text"
+                         inputmode="numeric" maxlength="11"
+                         (blur)="verificarVoluntario()">
+                  <mat-hint>Entre 6 y 11 dígitos</mat-hint>
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'nit') }}</mat-error>
+                </mat-form-field>
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombres y Apellidos completos</mat-label>
+                <input matInput formControlName="razonSocial">
+                <mat-error>{{ getFieldError(step1BasicInfo, 'razonSocial') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Correo Electrónico Corporativo</mat-label>
+                <input matInput formControlName="email" type="email">
+                <mat-error>{{ getFieldError(step1BasicInfo, 'email') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Número de Celular</mat-label>
+                <input matInput formControlName="celular" type="tel" inputmode="numeric">
+                <mat-error>{{ getFieldError(step1BasicInfo, 'celular') }}</mat-error>
+              </mat-form-field>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Fecha de Nacimiento</mat-label>
+                  <input matInput type="date" formControlName="fechaNacimiento">
+                  <mat-hint>Formato: AAAA-MM-DD</mat-hint>
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'fechaNacimiento') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>EPS</mat-label>
+                  <mat-select formControlName="eps">
+                    <mat-option *ngFor="let e of epsList" [value]="e">{{ e }}</mat-option>
+                  </mat-select>
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'eps') }}</mat-error>
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Departamento donde labora</mat-label>
+                  <mat-select formControlName="departamento" (selectionChange)="onDepartamentoChange()">
+                    <mat-option *ngFor="let d of departamentos" [value]="d">{{ d }}</mat-option>
+                  </mat-select>
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'departamento') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Municipio donde labora</mat-label>
+                  <mat-select formControlName="municipio" [disabled]="municipios.length === 0">
+                    <mat-option *ngFor="let m of municipios" [value]="m">{{ m }}</mat-option>
+                  </mat-select>
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'municipio') }}</mat-error>
+                </mat-form-field>
+              </div>
+            </ng-container>
 
-              <div class="gatekeeper-alert" *ngIf="diagPregunta.id === 1 && esEmpresa && arlNoAceptada">
-                ⚠️ Para avanzar y proteger a tu equipo, es indispensable certificar la cobertura de riesgos.
+            <!-- ONG / Empresa: NIT + Razón Social -->
+            <ng-container *ngIf="!esVoluntario">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>NIT (9 dígitos, sin dígito de verificación)</mat-label>
+                <input matInput formControlName="nit" type="text" inputmode="numeric" maxlength="9">
+                <mat-error>{{ getFieldError(step1BasicInfo, 'nit') }}</mat-error>
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Razón Social</mat-label>
+                <input matInput formControlName="razonSocial">
+                <mat-error>{{ getFieldError(step1BasicInfo, 'razonSocial') }}</mat-error>
+              </mat-form-field>
+            </ng-container>
+
+            <!-- ── BLOQUE 2: REPRESENTANTE LEGAL (ONG / Empresa) ── -->
+            <ng-container *ngIf="!esVoluntario">
+              <div class="bloque-header">
+                <span class="bloque-numero">2</span>
+                <span class="bloque-titulo">Datos Básicos del Representante Legal</span>
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombres y Apellidos completos</mat-label>
+                <input matInput formControlName="repNombre">
+                <mat-error>{{ getFieldError(step1BasicInfo, 'repNombre') }}</mat-error>
+              </mat-form-field>
+              <div class="form-row">
+                <mat-form-field appearance="outline" style="flex: 0 0 140px;">
+                  <mat-label>Tipo de Documento</mat-label>
+                  <mat-select formControlName="repTipoDoc">
+                    <mat-option *ngFor="let t of tiposDoc" [value]="t">{{ t }}</mat-option>
+                  </mat-select>
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'repTipoDoc') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Número de Documento</mat-label>
+                  <input matInput formControlName="repDoc" type="text" inputmode="numeric">
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'repDoc') }}</mat-error>
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Correo Electrónico Corporativo</mat-label>
+                  <input matInput formControlName="repEmail" type="email">
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'repEmail') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Celular</mat-label>
+                  <input matInput formControlName="repCelular" type="tel">
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'repCelular') }}</mat-error>
+                </mat-form-field>
+              </div>
+            </ng-container>
+
+            <!-- ── BLOQUE 3: GESTOR DE VOLUNTARIADO (ONG / Empresa) ── -->
+            <ng-container *ngIf="!esVoluntario">
+              <div class="bloque-header">
+                <span class="bloque-numero">3</span>
+                <span class="bloque-titulo">Datos Básicos del Gestor de Voluntariado</span>
+              </div>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Nombres y Apellidos completos</mat-label>
+                <input matInput formControlName="gestorNombre">
+                <mat-error>{{ getFieldError(step1BasicInfo, 'gestorNombre') }}</mat-error>
+              </mat-form-field>
+              <div class="form-row">
+                <mat-form-field appearance="outline" style="flex: 0 0 140px;">
+                  <mat-label>Tipo de Documento</mat-label>
+                  <mat-select formControlName="gestorTipoDoc">
+                    <mat-option *ngFor="let t of tiposDoc" [value]="t">{{ t }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Número de Documento</mat-label>
+                  <input matInput formControlName="gestorDoc" type="text" inputmode="numeric">
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Cargo</mat-label>
+                  <input matInput formControlName="gestorCargo"
+                         placeholder="Ej: Coordinador de Voluntariado">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Área Encargada</mat-label>
+                  <input matInput formControlName="gestorArea">
+                </mat-form-field>
+              </div>
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Correo Electrónico Corporativo</mat-label>
+                  <input matInput formControlName="gestorEmail" type="email">
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'gestorEmail') }}</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Celular de Contacto</mat-label>
+                  <input matInput formControlName="gestorCelular" type="tel">
+                  <mat-error>{{ getFieldError(step1BasicInfo, 'gestorCelular') }}</mat-error>
+                </mat-form-field>
+              </div>
+            </ng-container>
+
+            <!-- ── BLOQUE 4: TyC (todos los actores) ── -->
+            <div class="bloque-header">
+              <span class="bloque-numero">{{ esVoluntario ? '2' : '4' }}</span>
+              <span class="bloque-titulo">Aceptación de Tratamiento de Datos y Términos y Condiciones</span>
+            </div>
+            <div class="tyc-block" [formGroup]="step3Tyc">
+
+              <!-- Recuadro 1: Tratamiento de Datos -->
+              <div class="tyc-item">
+                <mat-checkbox formControlName="aceptaDatos" color="primary">
+                  He leído y acepto la
+                  <a href="#" target="_blank" class="tyc-link">Política de Tratamiento de Datos</a>
+                  de la Fundación Bolívar Davivienda.
+                </mat-checkbox>
+                <div class="tyc-acciones">
+                  <a href="#" target="_blank" class="tyc-accion-link">📄 Leer documento</a>
+                  <a href="#" download class="tyc-accion-link">⬇️ Descargar PDF</a>
+                  <a href="https://www.fundacionbolivar.org" target="_blank" class="tyc-accion-link">🌐 Sitio web FBD</a>
+                </div>
               </div>
 
-              <!-- Selección única -->
-              <div class="diag-opciones" *ngIf="diagPregunta.tipoSeleccion === 'unica'">
-                <button *ngFor="let op of diagPregunta.opciones; let oi = index"
-                        class="diag-opcion-btn"
-                        [class.selected]="diagRespuestas[diagPreguntaActual] === oi"
-                        (click)="seleccionarOpcion(oi)" type="button">
-                  <span class="opcion-indicador">
-                    {{ diagRespuestas[diagPreguntaActual] === oi ? '●' : '○' }}
-                  </span>
-                  {{ op.texto }}
-                </button>
+              <!-- Recuadro 2: TyC Plataforma -->
+              <div class="tyc-item">
+                <mat-checkbox formControlName="aceptaTyc" color="primary">
+                  He leído y acepto los
+                  <a href="#" target="_blank" class="tyc-link">Términos y Condiciones</a>
+                  de la plataforma Voluntariado 2.0.
+                </mat-checkbox>
+                <div class="tyc-acciones">
+                  <a href="#" target="_blank" class="tyc-accion-link">📄 Leer documento</a>
+                  <a href="#" download class="tyc-accion-link">⬇️ Descargar PDF</a>
+                  <a href="https://www.fundacionbolivar.org" target="_blank" class="tyc-accion-link">🌐 Sitio web FBD</a>
+                </div>
               </div>
 
-              <!-- Selección múltiple -->
-              <div class="diag-opciones" *ngIf="diagPregunta.tipoSeleccion === 'multiple'">
+            </div>
 
-                <!-- ODS: imágenes oficiales (pregunta 1, voluntario) -->
-                <ng-container *ngIf="diagPregunta.id === 1 && esVoluntario; else otrasMultiples">
-                  <div class="ods-grid">
-                    <button
-                      *ngFor="let ods of ODS_LIST; let oi = index"
-                      class="ods-card"
-                      [class.ods-selected]="diagMultipleSeleccion[diagPreguntaActual][oi]"
-                      [style.border-color]="diagMultipleSeleccion[diagPreguntaActual][oi] ? ods.color : 'transparent'"
-                      (click)="toggleMultiple(diagPreguntaActual, oi)"
-                      type="button">
-                      <img [src]="ods.img" [alt]="ods.nombre" class="ods-img">
-                      <div class="ods-check" *ngIf="diagMultipleSeleccion[diagPreguntaActual][oi]">✓</div>
-                    </button>
-                  </div>
-                </ng-container>
-
-                <!-- Disponibilidad (pregunta 4, voluntario) -->
-                <ng-template #otrasMultiples>
-                  <ng-container *ngIf="diagPregunta.id === 4 && esVoluntario; else opcionesNormales">
-                    <div class="disponibilidad-modalidad" *ngIf="!diagModalidadSeleccionada">
-                      <p class="diag-nota">Primero selecciona la modalidad:</p>
-                      <div class="modal-btns">
-                        <button class="modal-btn" type="button" (click)="diagModalidadSeleccionada = 'virtual'">
-                          💻 Virtual
-                        </button>
-                        <button class="modal-btn" type="button" (click)="diagModalidadSeleccionada = 'presencial'">
-                          📍 Presencial
-                        </button>
-                      </div>
-                    </div>
-                    <div *ngIf="diagModalidadSeleccionada" class="disponibilidad-detalle">
-                      <button mat-button class="cambiar-modal" type="button"
-                              (click)="diagModalidadSeleccionada = null">
-                        ← Cambiar modalidad
-                      </button>
-                      <p class="modal-elegida">
-                        {{ diagModalidadSeleccionada === 'virtual' ? '💻' : '📍' }}
-                        {{ diagModalidadSeleccionada | titlecase }}
-                      </p>
-                      <p class="diag-nota" style="margin-top:8px">Selecciona días y franja horaria:</p>
-                      <div *ngFor="let op of diagPregunta.opciones; let oi = index">
-                        <button
-                          *ngIf="(diagModalidadSeleccionada === 'virtual' && op.texto.includes('VIRTUAL')) ||
-                                 (diagModalidadSeleccionada === 'presencial' && op.texto.includes('PRESENCIAL'))"
-                          class="diag-opcion-btn"
-                          [class.selected]="diagMultipleSeleccion[diagPreguntaActual][oi]"
-                          (click)="toggleMultiple(diagPreguntaActual, oi)" type="button">
-                          <span class="opcion-indicador">
-                            {{ diagMultipleSeleccion[diagPreguntaActual][oi] ? '☑' : '☐' }}
-                          </span>
-                          {{ op.texto.replace(' - VIRTUAL','').replace(' - PRESENCIAL','') }}
-                        </button>
-                      </div>
-                    </div>
-                  </ng-container>
-
-                  <!-- Opciones normales de selección múltiple -->
-                  <ng-template #opcionesNormales>
-                    <button *ngFor="let op of diagPregunta.opciones; let oi = index"
-                            class="diag-opcion-btn"
-                            [class.selected]="diagMultipleSeleccion[diagPreguntaActual][oi]"
-                            (click)="toggleMultiple(diagPreguntaActual, oi)" type="button">
-                      <span class="opcion-indicador">
-                        {{ diagMultipleSeleccion[diagPreguntaActual][oi] ? '☑' : '☐' }}
-                      </span>
-                      {{ op.texto }}
-                    </button>
-                  </ng-template>
-                </ng-template>
-
-              </div><!-- /diag-opciones multiple -->
-
-              <mat-form-field appearance="outline" class="full-width otro-field"
-                *ngIf="diagPregunta.id === 5 && diagRespuestas[diagPreguntaActual] === diagPregunta.opciones.length - 1 && esVoluntario">
-                <mat-label>Especifica tu motivación</mat-label>
-                <input matInput [(ngModel)]="diagMotivacionOtro" [ngModelOptions]="{standalone:true}">
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" class="full-width otro-field"
-                *ngIf="diagPregunta.id === 2 && diagRespuestas[diagPreguntaActual] === diagPregunta.opciones.length - 1 && esVoluntario">
-                <mat-label>Especifica tu habilidad</mat-label>
-                <input matInput [(ngModel)]="diagTalentoOtro" [ngModelOptions]="{standalone:true}">
-              </mat-form-field>
-
-            </div><!-- /diag-card -->
-
-            <div class="diag-nav">
-              <button mat-stroked-button class="diag-nav-prev" type="button"
-                      [disabled]="diagPreguntaActual === 0" (click)="diagAnterior()">
-                ← Anterior
-              </button>
+            <!-- Botón Continuar -->
+            <div class="step-actions">
               <button mat-flat-button class="fbd-button" type="button"
-                      [disabled]="!diagPuedeSiguiente" (click)="diagSiguiente()">
-                {{ diagPreguntaActual === (diagConfig?.preguntas?.length ?? 0) - 1 ? 'Finalizar Diagnóstico ✓' : 'Siguiente →' }}
+                      [disabled]="step1BasicInfo.invalid || step3Tyc.invalid"
+                      (click)="onContinuarRegistro()">
+                CONTINUAR →
               </button>
             </div>
 
-          </ng-container>
+          </form>
+        </mat-step>
 
-        </div>
-      </mat-step>
+        <!-- ══════════════════════════════════════════════
+             STEP 2 — CARGUE DE DOCUMENTOS + SARLAFT
+             Solo ONG y Empresa. Voluntario salta al Step 3.
+        ═══════════════════════════════════════════════ -->
+        <mat-step [label]="esVoluntario ? 'Diagnóstico' : 'Documentos'" [stepControl]="step2Docs">
+          <div class="step-form">
 
-    </mat-stepper>
-  </mat-card>
+            <!-- ── ONG / EMPRESA: DOCUMENTOS ── -->
+            <ng-container *ngIf="!esVoluntario">
+              <div class="step-intro">
+                <h2>Cargue de Documentos</h2>
+                <p>Sube cada documento en formato <strong>PDF</strong> (máx. 10MB). La verificación es automática.</p>
+              </div>
+
+              <div class="doc-resumen" *ngIf="algunDocumentoCargado">
+                <span class="doc-resumen-item" *ngFor="let doc of documentos">
+                  <span [class]="'punto-estado ' + getEstadoClass(doc.estado)"></span>
+                  {{ doc.nombre }}: <strong>{{ getEstadoLabel(doc.estado) }}</strong>
+                </span>
+              </div>
+
+              <div class="doc-upload-list">
+                <div class="doc-upload-item" *ngFor="let doc of documentos; let i = index"
+                     [class.doc-verificado]="doc.estado === 'verificado'"
+                     [class.doc-rechazado]="doc.estado === 'rechazado'">
+                  <div class="doc-info">
+                    <strong>{{ doc.nombre }}</strong>
+                    <span class="doc-vigencia">{{ doc.vigencia }}</span>
+                    <span class="doc-archivo" *ngIf="doc.archivo">📄 {{ doc.archivo.name }}</span>
+                    <!-- Indicador de intentos -->
+                    <span class="doc-intentos"
+                          *ngIf="doc.intentos > 0 && doc.estado === 'rechazado'">
+                      ⚠️ Intento {{ doc.intentos }} de 3
+                    </span>
+                    <span class="doc-bloqueado"
+                          *ngIf="doc.intentos >= 3 && doc.estado === 'rechazado'">
+                      🔒 Máximo de intentos alcanzado. El administrador ha sido notificado.
+                    </span>
+                  </div>
+                  <div class="doc-acciones">
+                    <span class="estado-badge" [class]="getEstadoClass(doc.estado)"
+                          *ngIf="doc.estado !== 'sin_cargar'">
+                      {{ getEstadoLabel(doc.estado) }}
+                    </span>
+                    <div class="doc-spinner" *ngIf="doc.estado === 'verificando'">
+                      <mat-progress-bar mode="indeterminate" class="verificando-bar"></mat-progress-bar>
+                    </div>
+                    <label class="upload-btn"
+                           *ngIf="(doc.estado === 'sin_cargar' || doc.estado === 'rechazado') && doc.intentos < 3">
+                      {{ doc.estado === 'rechazado' ? 'Reintentar' : 'Subir PDF' }}
+                      <input type="file" accept="application/pdf" hidden
+                             (change)="onArchivoSeleccionado($event, i)">
+                    </label>
+                    <button class="eliminar-btn" type="button"
+                            *ngIf="doc.estado === 'pendiente' || doc.estado === 'verificado'"
+                            (click)="eliminarDocumento(i)">✕</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="doc-nota">
+                <strong>ℹ️ ¿Cómo funciona la verificación?</strong><br>
+                Una vez cargado el PDF, el sistema lo revisa automáticamente mediante IA.
+                Tienes máximo <strong>3 intentos</strong> por documento.
+                Si los 3 intentos fallan, el equipo de la Fundación te contactará directamente.
+              </div>
+
+              <!-- SARLAFT -->
+              <div class="sarlaft-section" [class.sarlaft-bloqueado]="!sarlaftPuedeConsultar">
+                <div class="sarlaft-divider">
+                  <span class="sarlaft-divider-label">VERIFICACIÓN DE LISTAS RESTRICTIVAS</span>
+                </div>
+
+                <div class="sarlaft-card sarlaft-card--bloqueado" *ngIf="!sarlaftPuedeConsultar">
+                  <div class="sarlaft-icon">🔒</div>
+                  <p class="sarlaft-texto">
+                    La consulta SARLAFT se habilitará automáticamente una vez que
+                    <strong>todos los documentos estén verificados</strong>.
+                  </p>
+                </div>
+
+                <div class="sarlaft-card sarlaft-card--pendiente"
+                     *ngIf="sarlaftPuedeConsultar && sarlaftEstado === 'pendiente'">
+                  <div class="sarlaft-icon">🛡️</div>
+                  <h3 class="sarlaft-titulo">Consulta en listas restrictivas</h3>
+                  <p class="sarlaft-texto">
+                    El sistema verificará que tu organización no figure en listas de control
+                    financiero (SARLAFT/LAFT). Este proceso es obligatorio y automático.
+                  </p>
+                  <button mat-flat-button class="fbd-button sarlaft-btn"
+                          type="button" (click)="iniciarConsultaSarlaft()">
+                    Iniciar verificación
+                  </button>
+                </div>
+
+                <div class="sarlaft-card sarlaft-card--consultando"
+                     *ngIf="sarlaftEstado === 'consultando'">
+                  <div class="sarlaft-icon">⏳</div>
+                  <h3 class="sarlaft-titulo">Verificando...</h3>
+                  <p class="sarlaft-texto">Consultando listas para <strong>{{ sarlaftNombre }}</strong>.</p>
+                  <mat-progress-bar mode="indeterminate" class="sarlaft-progress"></mat-progress-bar>
+                </div>
+
+                <div class="sarlaft-card sarlaft-card--ok"
+                     *ngIf="sarlaftEstado === 'sin_novedad'">
+                  <div class="sarlaft-icon">✅</div>
+                  <h3 class="sarlaft-titulo">Verificación superada</h3>
+                  <p class="sarlaft-texto">
+                    No se encontraron coincidencias. Ya puedes continuar con el proceso.
+                  </p>
+                </div>
+
+                <div class="sarlaft-card sarlaft-card--novedad"
+                     *ngIf="sarlaftEstado === 'con_novedad'">
+                  <div class="sarlaft-icon">⚠️</div>
+                  <h3 class="sarlaft-titulo">Protocolo de seguridad pendiente</h3>
+                  <p class="sarlaft-texto">
+                    Los datos proporcionados no superan los estándares técnicos de validación.
+                    Escribe a
+                    <a href="mailto:soporte@fundacionbolivar.org" class="tyc-link">
+                      soporte@fundacionbolivar.org
+                    </a>
+                    para más información.
+                  </p>
+                  <p class="sarlaft-nota">
+                    Tu registro quedará <strong>En Proceso</strong> mientras el equipo de
+                    cumplimiento revisa tu caso.
+                  </p>
+                </div>
+              </div>
+
+              <div class="step-actions">
+                <button mat-flat-button class="fbd-button" matStepperNext
+                        (click)="guardarProgreso()"
+                        [disabled]="!sarlaftPuedeAvanzar"
+                        type="button">
+                  SIGUIENTE →
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- ── VOLUNTARIO: DIAGNÓSTICO ── -->
+            <ng-container *ngIf="esVoluntario">
+              <ng-container *ngTemplateOutlet="diagTemplate"></ng-container>
+            </ng-container>
+
+          </div>
+        </mat-step>
+
+        <!-- ══════════════════════════════════════════════
+             STEP 3 — DIAGNÓSTICO DE MADUREZ (ONG / Empresa)
+        ═══════════════════════════════════════════════ -->
+        <mat-step label="Diagnóstico" [stepControl]="step4Diag" *ngIf="!esVoluntario">
+          <div class="step-form diag-step">
+            <ng-container *ngTemplateOutlet="diagTemplate"></ng-container>
+          </div>
+        </mat-step>
+
+      </mat-stepper>
+    </mat-card>
 
   </ng-container>
   <!-- ══ FIN ONBOARDING ══ -->
 
-  <!-- ══ PERFIL VOLUNTARIO ══ -->
-  <ng-container *ngIf="mostrarPerfil">
+  <!-- ══ PANTALLA DE CREDENCIALES ══ -->
+  <ng-container *ngIf="mostrarCredenciales">
+    <mat-card class="onboarding-card credenciales-card">
+      <div class="credenciales-mensaje">
+        <div class="credenciales-icono">🎉</div>
+        <h2>Gracias, hemos guardado tus datos.</h2>
+        <p>Bienvenido a este espacio de conexión, para que tus acciones contribuyan a un mundo mejor.</p>
+        <p class="credenciales-sub">Para continuar, crea tu usuario y contraseña.</p>
+      </div>
 
-    <!-- Hero -->
+      <form [formGroup]="credencialesForm" class="credenciales-form">
+
+        <!-- Usuario -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Usuario (correo electrónico)</mat-label>
+          <input matInput formControlName="usuario" type="email"
+                 placeholder="Ingresa el correo del gestor de voluntariado">
+          <mat-error>{{ getFieldError(credencialesForm, 'usuario') }}</mat-error>
+        </mat-form-field>
+
+        <!-- Contraseña -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña (máx. 8 caracteres)</mat-label>
+          <input matInput formControlName="contrasena"
+                 [type]="mostrarContrasena ? 'text' : 'password'"
+                 maxlength="8">
+          <button mat-icon-button matSuffix type="button"
+                  (click)="mostrarContrasena = !mostrarContrasena">
+            {{ mostrarContrasena ? '🙈' : '👁' }}
+          </button>
+          <mat-error>{{ getFieldError(credencialesForm, 'contrasena') }}</mat-error>
+        </mat-form-field>
+
+        <div class="step-actions">
+          <button mat-flat-button class="fbd-button" type="button"
+                  [disabled]="credencialesForm.invalid"
+                  (click)="onAsignarContrasena()">
+            Asignar contraseña
+          </button>
+        </div>
+
+      </form>
+    </mat-card>
+  </ng-container>
+  <!-- ══ FIN CREDENCIALES ══ -->
+
+  <!-- ══ PERFIL VOLUNTARIO ══ -->
+  <ng-container *ngIf="mostrarPerfil && esVoluntario">
+
     <div class="perfil-hero">
       <div class="perfil-avatar">
         <img *ngIf="fotoPreviewPerfil" [src]="fotoPreviewPerfil" alt="Foto" class="avatar-img">
@@ -637,53 +541,46 @@
       </button>
     </div>
 
-    <!-- Pestañas -->
     <mat-card class="perfil-card">
       <mat-tab-group [(selectedIndex)]="tabPerfilActiva" class="perfil-tabs" animationDuration="200ms">
 
-        <!-- PESTAÑA 1 — INFORMACIÓN PRIVADA -->
-        <mat-tab label="🔒 Información Privada">
+        <!-- PESTAÑA 1 — INFORMACIÓN BÁSICA PRIVADA -->
+        <mat-tab label="🔒 Información Básica">
           <div class="tab-content">
             <div class="section-header">DATOS NO EDITABLES</div>
             <div class="campos-readonly-grid">
-              <div class="campo-readonly"><span class="campo-label">Tipo de Documento</span><span class="campo-valor">{{ datosNoEditables.tipoDoc }}</span></div>
-              <div class="campo-readonly"><span class="campo-label">Número de Documento</span><span class="campo-valor">{{ datosNoEditables.numDoc }}</span></div>
-              <div class="campo-readonly"><span class="campo-label">Nombres y Apellidos</span><span class="campo-valor">{{ datosNoEditables.nombres }}</span></div>
-              <div class="campo-readonly"><span class="campo-label">Fecha de Nacimiento</span><span class="campo-valor">{{ datosNoEditables.fechaNac }}</span></div>
-              <div class="campo-readonly"><span class="campo-label">Empresa</span><span class="campo-valor">{{ datosNoEditables.empresa }}</span></div>
-              <div class="campo-readonly"><span class="campo-label">ARL</span><span class="campo-valor">{{ datosNoEditables.arl }}</span></div>
+              <div class="campo-readonly">
+                <span class="campo-label">Tipo de Documento</span>
+                <span class="campo-valor">{{ datosNoEditables.tipoDoc }}</span>
+              </div>
+              <div class="campo-readonly">
+                <span class="campo-label">Número de Documento</span>
+                <span class="campo-valor">{{ datosNoEditables.numDoc }}</span>
+              </div>
+              <div class="campo-readonly">
+                <span class="campo-label">Nombres y Apellidos</span>
+                <span class="campo-valor">{{ datosNoEditables.nombres }}</span>
+              </div>
+              <div class="campo-readonly">
+                <span class="campo-label">Fecha de Nacimiento</span>
+                <span class="campo-valor">{{ datosNoEditables.fechaNac }}</span>
+              </div>
+              <div class="campo-readonly">
+                <span class="campo-label">Empresa</span>
+                <span class="campo-valor">{{ datosNoEditables.empresa }}</span>
+              </div>
             </div>
 
             <div class="section-header" style="margin-top:24px">DATOS EDITABLES</div>
             <form [formGroup]="step1BasicInfo" class="tab-form">
               <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Correo Electrónico</mat-label>
+                <mat-label>Correo Electrónico Corporativo</mat-label>
                 <input matInput formControlName="email" type="email">
               </mat-form-field>
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Número de Celular</mat-label>
                 <input matInput formControlName="celular" type="tel">
               </mat-form-field>
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>EPS</mat-label>
-                <mat-select formControlName="eps">
-                  <mat-option *ngFor="let e of epsList2" [value]="e">{{ e }}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <div class="form-row">
-                <mat-form-field appearance="outline" class="flex-grow">
-                  <mat-label>Departamento</mat-label>
-                  <mat-select formControlName="departamento" (selectionChange)="onDepartamentoChange()">
-                    <mat-option *ngFor="let d of departamentos" [value]="d">{{ d }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="flex-grow">
-                  <mat-label>Municipio</mat-label>
-                  <mat-select formControlName="municipio">
-                    <mat-option *ngFor="let m of municipios" [value]="m">{{ m }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
               <div class="tab-actions">
                 <button mat-flat-button class="fbd-button" type="button"
                         (click)="guardarCambiosPerfil()">
@@ -695,17 +592,21 @@
         </mat-tab>
 
         <!-- PESTAÑA 2 — PERFIL PÚBLICO -->
-        <mat-tab label="👁 Perfil Público">
+        <mat-tab label="👁 Perfil">
           <div class="tab-content">
-            <p class="tab-desc">Estos datos son <strong>opcionales</strong>. Activa el toggle para hacerlos visibles en el Marketplace.</p>
+            <p class="tab-desc">
+              Estos datos son <strong>opcionales</strong>.
+              Activa el toggle para hacerlos visibles en el Marketplace.
+            </p>
 
             <!-- Foto -->
             <div class="campo-toggle-row">
               <div class="campo-toggle-info">
                 <span class="campo-toggle-label">Foto de perfil</span>
-                <span class="campo-toggle-hint">Corporativa tipo carnet, fondo blanco</span>
+                <span class="campo-toggle-hint">Foto corporativa tipo carnet, fondo blanco, rostro completo</span>
               </div>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.foto" (change)="onTogglePerfilChange()" color="primary">
+              <mat-slide-toggle [(ngModel)]="togglesPerfil.foto"
+                                (change)="onTogglePerfilChange()" color="primary">
                 <span class="toggle-estado">{{ togglesPerfil.foto ? '👁 Público' : '🔒 Privado' }}</span>
               </mat-slide-toggle>
             </div>
@@ -721,10 +622,11 @@
             <!-- Cargo -->
             <div class="campo-toggle-row" style="margin-bottom:16px">
               <mat-form-field appearance="outline" class="flex-grow" style="margin:0">
-                <mat-label>Cargo</mat-label>
-                <input matInput [(ngModel)]="step1BasicInfo.value.cargo" placeholder="Ej: Analista de Desarrollo">
+                <mat-label>Cargo dentro de la empresa</mat-label>
+                <input matInput placeholder="Ej: Analista de Desarrollo">
               </mat-form-field>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.cargo" (change)="onTogglePerfilChange()" color="primary">
+              <mat-slide-toggle [(ngModel)]="togglesPerfil.cargo"
+                                (change)="onTogglePerfilChange()" color="primary">
                 <span class="toggle-estado">{{ togglesPerfil.cargo ? '👁' : '🔒' }}</span>
               </mat-slide-toggle>
             </div>
@@ -735,7 +637,8 @@
                 <mat-label>Restricciones alimenticias / Alergias</mat-label>
                 <input matInput placeholder="Ej: Vegetariano, Alérgico a nueces">
               </mat-form-field>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.restricciones" (change)="onTogglePerfilChange()" color="primary">
+              <mat-slide-toggle [(ngModel)]="togglesPerfil.restricciones"
+                                (change)="onTogglePerfilChange()" color="primary">
                 <span class="toggle-estado">{{ togglesPerfil.restricciones ? '👁' : '🔒' }}</span>
               </mat-slide-toggle>
             </div>
@@ -748,7 +651,8 @@
                   <mat-option *ngFor="let n of nivelesEducativos" [value]="n">{{ n }}</mat-option>
                 </mat-select>
               </mat-form-field>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.educacion" (change)="onTogglePerfilChange()" color="primary">
+              <mat-slide-toggle [(ngModel)]="togglesPerfil.educacion"
+                                (change)="onTogglePerfilChange()" color="primary">
                 <span class="toggle-estado">{{ togglesPerfil.educacion ? '👁' : '🔒' }}</span>
               </mat-slide-toggle>
             </div>
@@ -761,7 +665,8 @@
                   <mat-option *ngFor="let g of generosOpciones" [value]="g">{{ g }}</mat-option>
                 </mat-select>
               </mat-form-field>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.genero" (change)="onTogglePerfilChange()" color="primary">
+              <mat-slide-toggle [(ngModel)]="togglesPerfil.genero"
+                                (change)="onTogglePerfilChange()" color="primary">
                 <span class="toggle-estado">{{ togglesPerfil.genero ? '👁' : '🔒' }}</span>
               </mat-slide-toggle>
             </div>
@@ -775,14 +680,17 @@
             <div class="vista-previa-card">
               <div class="vp-header">
                 <div class="perfil-avatar">
-                  <img *ngIf="fotoPreviewPerfil && togglesPerfil.foto" [src]="fotoPreviewPerfil" class="avatar-img">
+                  <img *ngIf="fotoPreviewPerfil && togglesPerfil.foto"
+                       [src]="fotoPreviewPerfil" class="avatar-img">
                   <div *ngIf="!fotoPreviewPerfil || !togglesPerfil.foto" class="avatar-placeholder">
                     {{ datosNoEditables.nombres.charAt(0) }}
                   </div>
                 </div>
                 <div class="vp-header-info">
                   <h2 class="vp-nombre">{{ datosNoEditables.nombres }}</h2>
-                  <div class="vp-nivel">🏆 <strong>{{ datosDiagnostico.nivel }}</strong> · {{ datosDiagnostico.puntaje }} pts</div>
+                  <div class="vp-nivel">
+                    🏆 <strong>{{ datosDiagnostico.nivel }}</strong> · {{ datosDiagnostico.puntaje }} pts
+                  </div>
                 </div>
               </div>
 
@@ -805,10 +713,20 @@
                 <div class="vp-seccion-titulo">DISPONIBILIDAD</div>
                 <span class="vp-tag">{{ datosDiagnostico.disponibilidad }}</span>
               </div>
+
+              <div class="vp-seccion">
+                <div class="vp-seccion-titulo">MOTIVACIÓN</div>
+                <span class="vp-tag">{{ datosDiagnostico.motivacion }}</span>
+              </div>
             </div>
 
             <div class="tab-actions">
-              <button mat-flat-button class="fbd-button fbd-button-lg" type="button" (click)="publicarPerfil()">
+              <button mat-stroked-button class="diag-nav-prev" type="button"
+                      (click)="tabPerfilActiva = 1">
+                ← Atrás
+              </button>
+              <button mat-flat-button class="fbd-button fbd-button-lg" type="button"
+                      (click)="publicarPerfil()">
                 🚀 Publicar Perfil
               </button>
             </div>
@@ -820,5 +738,124 @@
 
   </ng-container>
   <!-- ══ FIN PERFIL VOLUNTARIO ══ -->
+
+  <!-- ══ TEMPLATE COMPARTIDO: DIAGNÓSTICO ══ -->
+  <ng-template #diagTemplate>
+    <div class="diag-step">
+
+      <!-- Resultado final -->
+      <div class="diag-resultado" *ngIf="diagCompletado && diagNivelResultado">
+        <div class="diag-nivel-badge">
+          <div class="diag-trofeo">🏆</div>
+          <h2 class="diag-nivel-nombre">{{ diagNivelResultado.nombre }}</h2>
+          <p class="diag-nivel-desc">{{ diagNivelResultado.perfil }}</p>
+          <div class="diag-puntaje">{{ diagPuntajeTotal }} / 100 pts</div>
+        </div>
+        <p class="diag-mensaje">{{ diagNivelResultado.mensajeBienvenida }}</p>
+        <div class="diag-recomendaciones">
+          <h3>Recomendaciones para ti:</h3>
+          <ul>
+            <li *ngFor="let r of diagNivelResultado.recomendaciones">{{ r }}</li>
+          </ul>
+        </div>
+        <button mat-flat-button class="fbd-button fbd-button-lg"
+                (click)="irAlPerfil()" type="button">
+          ✏️ Ir a mi Perfil
+        </button>
+      </div>
+
+      <!-- Cuestionario -->
+      <ng-container *ngIf="!diagCompletado && diagPregunta">
+
+        <div class="diag-header">
+          <span class="diag-titulo">{{ diagConfig?.titulo }}</span>
+          <span class="diag-progreso-label">
+            {{ diagPreguntaActual + 1 }} / {{ diagPreguntasVisibles.length }}
+          </span>
+        </div>
+        <mat-progress-bar mode="determinate" [value]="diagProgresoPct"
+                          class="diag-progress-bar">
+        </mat-progress-bar>
+
+        <div class="diag-card">
+          <div class="diag-dimension">{{ diagPregunta.dimension }}</div>
+          <h3 class="diag-pregunta">{{ diagPregunta.pregunta }}</h3>
+          <p class="diag-nota" *ngIf="diagPregunta.notaSubtitulo">
+            {{ diagPregunta.notaSubtitulo }}
+          </p>
+
+          <!-- Alerta gatekeeper empresa (ARL) -->
+          <div class="gatekeeper-alert"
+               *ngIf="diagPregunta.id === 1 && esEmpresa && diagRespuestas[diagPreguntaActual] === 0">
+            ⚠️ Si seleccionas "No cubiertos", solo podrás acceder a jornadas virtuales.
+          </div>
+
+          <!-- Selección única -->
+          <div class="diag-opciones" *ngIf="diagPregunta.tipoSeleccion === 'unica'">
+            <button *ngFor="let op of diagPregunta.opciones; let oi = index"
+                    class="diag-opcion-btn"
+                    [class.selected]="diagRespuestas[diagPreguntaActual] === oi"
+                    (click)="seleccionarOpcion(oi)" type="button">
+              <span class="opcion-indicador">
+                {{ diagRespuestas[diagPreguntaActual] === oi ? '●' : '○' }}
+              </span>
+              {{ op.texto }}
+            </button>
+          </div>
+
+          <!-- Selección múltiple -->
+          <div class="diag-opciones" *ngIf="diagPregunta.tipoSeleccion === 'multiple'">
+
+            <!-- ODS (pregunta 1 voluntario) -->
+            <ng-container *ngIf="diagPregunta.id === 1 && esVoluntario; else otrasMultiples">
+              <div class="ods-grid">
+                <button *ngFor="let ods of ODS_LIST; let oi = index"
+                        class="ods-card"
+                        [class.ods-selected]="diagMultipleSeleccion[diagPreguntaActual][oi]"
+                        [style.border-color]="diagMultipleSeleccion[diagPreguntaActual][oi]
+                          ? ods.color : 'transparent'"
+                        (click)="toggleMultiple(diagPreguntaActual, oi)"
+                        type="button">
+                  <img [src]="ods.img" [alt]="ods.nombre" class="ods-img">
+                  <div class="ods-check"
+                       *ngIf="diagMultipleSeleccion[diagPreguntaActual][oi]">✓</div>
+                </button>
+              </div>
+            </ng-container>
+
+            <!-- Opciones normales múltiple -->
+            <ng-template #otrasMultiples>
+              <button *ngFor="let op of diagPregunta.opciones; let oi = index"
+                      class="diag-opcion-btn"
+                      [class.selected]="diagMultipleSeleccion[diagPreguntaActual][oi]"
+                      (click)="toggleMultiple(diagPreguntaActual, oi)" type="button">
+                <span class="opcion-indicador">
+                  {{ diagMultipleSeleccion[diagPreguntaActual][oi] ? '☑' : '☐' }}
+                </span>
+                {{ op.texto }}
+              </button>
+            </ng-template>
+
+          </div>
+
+        </div>
+
+        <div class="diag-nav">
+          <button mat-stroked-button class="diag-nav-prev" type="button"
+                  [disabled]="diagPreguntaActual === 0" (click)="diagAnterior()">
+            ← Atrás
+          </button>
+          <button mat-flat-button class="fbd-button" type="button"
+                  [disabled]="!diagPuedeSiguiente" (click)="diagSiguiente()">
+            {{ diagPreguntaActual === diagPreguntasVisibles.length - 1
+              ? 'Enviar Diagnóstico ✓'
+              : 'Siguiente →' }}
+          </button>
+        </div>
+
+      </ng-container>
+    </div>
+  </ng-template>
+  <!-- ══ FIN TEMPLATE DIAGNÓSTICO ══ -->
 
 </div>

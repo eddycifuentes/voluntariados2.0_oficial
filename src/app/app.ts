@@ -27,6 +27,7 @@ import {
   PreguntaDiagnostico,
   NivelMadurez,
   calcularNivel,
+  getPreguntasVisibles,
   ODS_LIST,
   HABILIDADES_VOLUNTARIO,
 } from './diagnostico.data';
@@ -42,14 +43,15 @@ export interface DocumentoState {
   vigencia: string;
   archivo: File | null;
   estado: EstadoDoc;
+  intentos: number;
 }
 
 // ── Estado SARLAFT ────────────────────────────────────────────────────────────
 export type EstadoSarlaft =
-  | 'pendiente'        // Sin iniciar
-  | 'consultando'      // En proceso (spinner)
-  | 'sin_novedad'      // OK — puede avanzar
-  | 'con_novedad';     // Hay coincidencia — queda en revisión admin
+  | 'pendiente'
+  | 'consultando'
+  | 'sin_novedad'
+  | 'con_novedad';
 
 // ─── Pop-up voluntario no encontrado ─────────────────────────────────────────
 @NgComponent({
@@ -90,11 +92,14 @@ export class VoluntarioNotFoundDialogComponent {
       <div class="dialog-emoji">✏️</div>
       <h2 class="dialog-title">¡Completa tu perfil!</h2>
       <p class="dialog-message">
-        Agrega información adicional para mejorar tu experiencia y conectar mejor con las organizaciones sociales.
+        Agrega información adicional para mejorar tu experiencia
+        y conectar mejor con las organizaciones sociales.
       </p>
       <div class="dialog-actions">
-        <button mat-stroked-button class="dialog-btn-secondary" [mat-dialog-close]="'omitir'">Ahora no</button>
-        <button mat-flat-button class="dialog-btn" [mat-dialog-close]="'completar'">Completar perfil</button>
+        <button mat-stroked-button class="dialog-btn-secondary"
+                [mat-dialog-close]="'omitir'">Ahora no</button>
+        <button mat-flat-button class="dialog-btn"
+                [mat-dialog-close]="'completar'">Completar perfil</button>
       </div>
     </div>
   `,
@@ -140,11 +145,18 @@ export class AppComponent implements OnInit {
     { value: 'Voluntario',          desc: 'Encuentra jornadas que se ajusten a tu perfil y disponibilidad.' },
   ];
 
-  // ── Formularios por step ───────────────────────────────────────────────────
+  // ── Formularios ────────────────────────────────────────────────────────────
   step1BasicInfo!: FormGroup;
   step2Docs!:      FormGroup;
   step3Tyc!:       FormGroup;
   step4Diag!:      FormGroup;
+  credencialesForm!: FormGroup;
+
+  // ── Navegación ─────────────────────────────────────────────────────────────
+  stepActual: number = 1;
+  mostrarPerfil: boolean = false;
+  mostrarCredenciales: boolean = false;
+  mostrarContrasena: boolean = false;
 
   // ── DANE ───────────────────────────────────────────────────────────────────
   departamentos: string[] = getDepartamentos();
@@ -156,25 +168,31 @@ export class AppComponent implements OnInit {
     'Capresoca EPS', 'Comfenalco Valle EPS', 'Compensar EPS',
     'EPS Familiar de Colombia', 'EPS Sanitas', 'EPS Sura',
     'Famisanar', 'Mutual SER', 'Nueva EPS', 'Salud Total EPS',
-    'Salud Vida EPS', 'SOS', 'Unimec', 'Coosalud EPS'
+    'Salud Vida EPS', 'SOS', 'Unimec', 'Coosalud EPS',
+  ];
+
+  epsList2 = [
+    'Aliansalud EPS', 'Asmet Salud', 'Cajacopi Atlántico', 'Capresoca EPS',
+    'Comfenalco Valle EPS', 'Compensar EPS', 'EPS Familiar de Colombia',
+    'EPS Sanitas', 'EPS Sura', 'Famisanar', 'Mutual SER', 'Nueva EPS',
+    'Salud Total EPS', 'Salud Vida EPS', 'SOS', 'Unimec', 'Coosalud EPS',
   ];
 
   // ── Tipos de documento ─────────────────────────────────────────────────────
   tiposDoc = ['CC', 'CE', 'PA', 'TI', 'PEP'];
 
-  // ── HU-004: Estado de documentos ──────────────────────────────────────────
+  // ── Documentos ─────────────────────────────────────────────────────────────
   documentos: DocumentoState[] = [
-    { nombre: 'RUT',                vigencia: 'Vigencia: menor a 30 días', archivo: null, estado: 'sin_cargar' },
-    { nombre: 'Cámara de Comercio', vigencia: 'Vigencia: menor a 90 días', archivo: null, estado: 'sin_cargar' },
-    { nombre: 'Estados Financieros',vigencia: 'Último año fiscal',         archivo: null, estado: 'sin_cargar' },
+    { nombre: 'RUT',                 vigencia: 'Vigencia: menor a 30 días', archivo: null, estado: 'sin_cargar', intentos: 0 },
+    { nombre: 'Cámara de Comercio',  vigencia: 'Vigencia: menor a 90 días', archivo: null, estado: 'sin_cargar', intentos: 0 },
+    { nombre: 'Estados Financieros', vigencia: 'Último año fiscal',          archivo: null, estado: 'sin_cargar', intentos: 0 },
   ];
 
-  // ── SARLAFT — Org y Empresa (nuevo) ───────────────────────────────────────
+  // ── SARLAFT ────────────────────────────────────────────────────────────────
   sarlaftEstado: EstadoSarlaft = 'pendiente';
-  sarlaftNombre: string = '';  // Nombre consultado (rep. legal o gestor)
+  sarlaftNombre: string = '';
 
   get sarlaftPuedeConsultar(): boolean {
-    // Permite consultar solo si todos los docs están verificados
     return this.documentos.every(d => d.estado === 'verificado');
   }
 
@@ -212,17 +230,15 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    this.documentos[idx].intentos += 1;
     this.documentos[idx].archivo = file;
     this.documentos[idx].estado = 'verificado';
-
-    // Resetear SARLAFT si se vuelve a cargar un documento
     this.resetSarlaft();
   }
 
   eliminarDocumento(idx: number) {
     this.documentos[idx].archivo = null;
     this.documentos[idx].estado = 'sin_cargar';
-    // Si se elimina un doc, se resetea SARLAFT ya que los docs cambiaron
     this.resetSarlaft();
   }
 
@@ -248,7 +264,7 @@ export class AppComponent implements OnInit {
     return classes[estado];
   }
 
-  // ── Diagnósticos ──────────────────────────────────────────────────────────
+  // ── Diagnósticos ───────────────────────────────────────────────────────────
   diagConfig: DiagnosticoConfig | null = null;
   diagPreguntaActual = 0;
   diagRespuestas: (number | number[] | null)[] = [];
@@ -259,9 +275,37 @@ export class AppComponent implements OnInit {
   diagCompletado = false;
   diagNivelResultado: NivelMadurez | null = null;
   diagPuntajeTotal = 0;
+  diagPreguntasVisibles: PreguntaDiagnostico[] = [];
 
   readonly ODS_LIST = ODS_LIST;
   readonly HABILIDADES = HABILIDADES_VOLUNTARIO;
+
+  // ── Perfil ─────────────────────────────────────────────────────────────────
+  tabPerfilActiva = 0;
+  togglesPerfil = {
+    foto: false, cargo: false, restricciones: false, educacion: false, genero: false,
+  };
+  fotoPreviewPerfil = '';
+  guardadoMsgPerfil = '';
+
+  datosNoEditables = {
+    tipoDoc: 'CC', numDoc: '1103938', nombres: 'Juan Pérez García',
+    fechaNac: '1990-05-12', empresa: 'Davivienda S.A.', arl: 'Sura ARL',
+  };
+
+  nivelesEducativos = ['Secundaria', 'Técnico', 'Tecnólogo', 'Universitario', 'Especialista', 'Máster', 'Doctorado'];
+  generosOpciones   = ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir'];
+
+  datosDiagnostico = {
+    nivel: 'Especialista', puntaje: 60, odsTop3: [3, 4, 10],
+    habilidad: 'Salud y Bienestar',
+    disponibilidad: 'Lunes y miércoles — Mañana (Virtual)',
+    motivacion: 'Contribuir al desarrollo educativo de comunidades vulnerables',
+  };
+
+  get odsTop3Items() {
+    return ODS_LIST.filter(o => this.datosDiagnostico.odsTop3.includes(o.id));
+  }
 
   constructor(
     private _fb: FormBuilder,
@@ -280,25 +324,27 @@ export class AppComponent implements OnInit {
 
   private _initForms() {
     this.step1BasicInfo = this._fb.group({
-      tipoDoc:          ['CC'],
-      nit:              [''],
-      razonSocial:      [''],
-      repNombre:        [''],
-      repTipoDoc:       ['CC'],
-      repDoc:           [''],
-      repEmail:         [''],
-      repCelular:       [''],
-      gestorNombre:     [''],
-      gestorCargo:      [''],
-      gestorArea:       [''],
-      gestorEmail:      [''],
-      gestorCelular:    [''],
-      fechaNacimiento:  [''],
-      eps:              [''],
-      departamento:     [''],
-      municipio:        [''],
-      email:            [''],
-      celular:          [''],
+      tipoDoc:         ['CC'],
+      nit:             [''],
+      razonSocial:     [''],
+      repNombre:       [''],
+      repTipoDoc:      ['CC'],
+      repDoc:          [''],
+      repEmail:        [''],
+      repCelular:      [''],
+      gestorNombre:    [''],
+      gestorTipoDoc:   ['CC'],
+      gestorDoc:       [''],
+      gestorCargo:     [''],
+      gestorArea:      [''],
+      gestorEmail:     [''],
+      gestorCelular:   [''],
+      fechaNacimiento: [''],
+      eps:             [''],
+      departamento:    [''],
+      municipio:       [''],
+      email:           [''],
+      celular:         [''],
     });
 
     this.step2Docs = this._fb.group({});
@@ -311,22 +357,30 @@ export class AppComponent implements OnInit {
     this.step4Diag = this._fb.group({
       completado: [false, Validators.requiredTrue],
     });
+
+    this.credencialesForm = this._fb.group({
+      usuario:    ['', [Validators.required, Validators.email]],
+      contrasena: ['', [Validators.required, Validators.maxLength(8)]],
+    });
   }
 
   private _resetFormulario() {
     this.step1BasicInfo.reset({
-      tipoDoc: 'CC',
-      nit: '', razonSocial: '',
+      tipoDoc: 'CC', nit: '', razonSocial: '',
       repNombre: '', repTipoDoc: 'CC', repDoc: '', repEmail: '', repCelular: '',
-      gestorNombre: '', gestorCargo: '', gestorArea: '',
-      gestorEmail: '', gestorCelular: '',
+      gestorNombre: '', gestorTipoDoc: 'CC', gestorDoc: '', gestorCargo: '',
+      gestorArea: '', gestorEmail: '', gestorCelular: '',
       fechaNacimiento: '', eps: '',
       departamento: '', municipio: '',
       email: '', celular: '',
     });
     this.step3Tyc.reset({ aceptaTyc: false, aceptaDatos: false });
     this.step4Diag.reset({ completado: false });
+    this.credencialesForm.reset({ usuario: '', contrasena: '' });
     this.municipios = [];
+    this.stepActual = 1;
+    this.mostrarCredenciales = false;
+    this.mostrarContrasena = false;
 
     if (this.stepper) {
       this.stepper.reset();
@@ -350,13 +404,13 @@ export class AppComponent implements OnInit {
       this.diagConfig = DIAGNOSTICO_ORGANIZACION;
     }
 
+    this.diagPreguntasVisibles = getPreguntasVisibles(this.diagConfig);
     this._resetDiagnostico();
     this._resetDocumentos();
   }
 
   private _actualizarValidadores() {
     const c = this.step1BasicInfo.controls;
-
     Object.values(c).forEach(ctrl => ctrl.clearValidators());
 
     c['razonSocial'].setValidators([Validators.required]);
@@ -390,11 +444,29 @@ export class AppComponent implements OnInit {
 
   private _resetDocumentos() {
     this.documentos = [
-      { nombre: 'RUT',                vigencia: 'Vigencia: menor a 30 días', archivo: null, estado: 'sin_cargar' },
-      { nombre: 'Cámara de Comercio', vigencia: 'Vigencia: menor a 90 días', archivo: null, estado: 'sin_cargar' },
-      { nombre: 'Estados Financieros',vigencia: 'Último año fiscal',         archivo: null, estado: 'sin_cargar' },
+      { nombre: 'RUT',                 vigencia: 'Vigencia: menor a 30 días', archivo: null, estado: 'sin_cargar', intentos: 0 },
+      { nombre: 'Cámara de Comercio',  vigencia: 'Vigencia: menor a 90 días', archivo: null, estado: 'sin_cargar', intentos: 0 },
+      { nombre: 'Estados Financieros', vigencia: 'Último año fiscal',          archivo: null, estado: 'sin_cargar', intentos: 0 },
     ];
     this.resetSarlaft();
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // REGISTRO — Continuar y Credenciales
+  // ─────────────────────────────────────────────────────────────────────────
+
+  onContinuarRegistro(): void {
+    this.mostrarCredenciales = true;
+  }
+
+  onAsignarContrasena(): void {
+    this._snack.open(
+      '✅ Su contraseña fue creada. Para continuar haga clic en el botón correspondiente.',
+      '', { duration: 4000, panelClass: 'fbd-snack' }
+    );
+    this.mostrarCredenciales = false;
+    this.stepActual = 2;
+    setTimeout(() => { this.stepper?.next(); }, 300);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -428,7 +500,6 @@ export class AppComponent implements OnInit {
   // ─────────────────────────────────────────────────────────────────────────
 
   guardarProgreso() {
-    // En producción: llamada al API para persistir el estado actual
     console.log('Progreso guardado:', {
       actor: this.selectedActor,
       step1: this.step1BasicInfo.value,
@@ -449,20 +520,21 @@ export class AppComponent implements OnInit {
     this.diagModalidadSeleccionada = null;
 
     if (this.diagConfig) {
-      this.diagRespuestas = this.diagConfig.preguntas.map(() => null);
-      this.diagMultipleSeleccion = this.diagConfig.preguntas.map(p =>
+      this.diagPreguntasVisibles = getPreguntasVisibles(this.diagConfig);
+      this.diagRespuestas = this.diagPreguntasVisibles.map(() => null);
+      this.diagMultipleSeleccion = this.diagPreguntasVisibles.map(p =>
         p.opciones.map(() => false)
       );
     }
   }
 
   get diagPregunta(): PreguntaDiagnostico | null {
-    return this.diagConfig?.preguntas[this.diagPreguntaActual] ?? null;
+    return this.diagPreguntasVisibles[this.diagPreguntaActual] ?? null;
   }
 
   get diagProgresoPct(): number {
-    if (!this.diagConfig) return 0;
-    return Math.round((this.diagPreguntaActual / this.diagConfig.preguntas.length) * 100);
+    if (!this.diagPreguntasVisibles.length) return 0;
+    return Math.round((this.diagPreguntaActual / this.diagPreguntasVisibles.length) * 100);
   }
 
   get diagPuedeSiguiente(): boolean {
@@ -477,7 +549,7 @@ export class AppComponent implements OnInit {
   }
 
   toggleMultiple(pregIdx: number, opIdx: number) {
-    const pregunta = this.diagConfig!.preguntas[pregIdx];
+    const pregunta = this.diagPreguntasVisibles[pregIdx];
     const max = pregunta.maxOpciones ?? 99;
     const sel = this.diagMultipleSeleccion[pregIdx];
     const yaSeleccionados = sel.filter(v => v).length;
@@ -491,7 +563,7 @@ export class AppComponent implements OnInit {
 
   diagSiguiente() {
     if (!this.diagPuedeSiguiente) return;
-    const total = this.diagConfig!.preguntas.length;
+    const total = this.diagPreguntasVisibles.length;
     if (this.diagPreguntaActual < total - 1) {
       this.diagPreguntaActual++;
     } else {
@@ -502,7 +574,7 @@ export class AppComponent implements OnInit {
   finalizarDiagnostico() {
     if (!this.diagConfig) return;
     let puntaje = 0;
-    this.diagConfig.preguntas.forEach((preg, pi) => {
+    this.diagPreguntasVisibles.forEach((preg, pi) => {
       if (preg.tipoSeleccion === 'unica') {
         const idx = this.diagRespuestas[pi] as number | null;
         if (idx !== null) puntaje += preg.opciones[idx].puntos;
@@ -512,13 +584,11 @@ export class AppComponent implements OnInit {
         });
       }
     });
-    this.diagPuntajeTotal = puntaje;
-    this.diagNivelResultado = calcularNivel(this.diagConfig, puntaje);
+    this.diagPuntajeTotal = Math.round(puntaje);
+    this.diagNivelResultado = calcularNivel(this.diagConfig, this.diagPuntajeTotal);
     this.diagCompletado = true;
     this.step4Diag.get('completado')?.setValue(true);
   }
-
-  mostrarPerfil = false;
 
   irAlPerfil() {
     if (this.esVoluntario) {
@@ -542,38 +612,9 @@ export class AppComponent implements OnInit {
     }
   }
 
-  tabPerfilActiva = 0;
-  togglesPerfil = {
-    foto: false, cargo: false, restricciones: false, educacion: false, genero: false,
-  };
-  fotoPreviewPerfil = '';
-  guardadoMsgPerfil = '';
-
-  datosNoEditables = {
-    tipoDoc: 'CC', numDoc: '1103938', nombres: 'Juan Pérez García',
-    fechaNac: '1990-05-12', empresa: 'Davivienda S.A.', arl: 'Sura ARL',
-  };
-
-  epsList2 = [
-    'Aliansalud EPS','Asmet Salud','Cajacopi Atlántico','Capresoca EPS',
-    'Comfenalco Valle EPS','Compensar EPS','EPS Familiar de Colombia',
-    'EPS Sanitas','EPS Sura','Famisanar','Mutual SER','Nueva EPS',
-    'Salud Total EPS','Salud Vida EPS','SOS','Unimec','Coosalud EPS',
-  ];
-
-  nivelesEducativos = ['Secundaria','Técnico','Tecnólogo','Universitario','Especialista','Máster','Doctorado'];
-  generosOpciones   = ['Masculino','Femenino','Otro','Prefiero no decir'];
-
-  datosDiagnostico = {
-    nivel: 'Bronce', puntaje: 85, odsTop3: [3, 4, 10],
-    habilidad: 'Salud y Bienestar',
-    disponibilidad: 'Lunes y miércoles — Mañana (Virtual)',
-    motivacion: 'Contribuir al desarrollo educativo de comunidades vulnerables',
-  };
-
-  get odsTop3Items() {
-    return ODS_LIST.filter(o => this.datosDiagnostico.odsTop3.includes(o.id));
-  }
+  // ─────────────────────────────────────────────────────────────────────────
+  // PERFIL
+  // ─────────────────────────────────────────────────────────────────────────
 
   onFotoSeleccionadaPerfil(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -606,18 +647,6 @@ export class AppComponent implements OnInit {
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // LABELS DINÁMICOS DEL STEPPER
-  // ─────────────────────────────────────────────────────────────────────────
-
-  get stepLabel2(): string {
-    return this.selectedActor === 'Voluntario' ? 'Tratamiento y TyC' : 'Documentos y Validación';
-  }
-
-  get stepLabel3(): string {
-    return this.selectedActor === 'Voluntario' ? 'Listas Restrictivas' : 'Tratamiento y TyC';
-  }
-
-  // ─────────────────────────────────────────────────────────────────────────
   // HELPERS
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -639,5 +668,14 @@ export class AppComponent implements OnInit {
   get arlNoAceptada(): boolean {
     if (!this.esEmpresa || !this.diagConfig) return false;
     return this.diagRespuestas[0] === null;
+  }
+
+  // Labels dinámicos (compatibilidad)
+  get stepLabel2(): string {
+    return this.esVoluntario ? 'Diagnóstico' : 'Documentos';
+  }
+
+  get stepLabel3(): string {
+    return 'Diagnóstico';
   }
 }
