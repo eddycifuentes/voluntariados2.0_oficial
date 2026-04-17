@@ -42,3 +42,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+app_backup.html
+*.backup
+
+davi-fbol-voluntariado-back-mngr/
