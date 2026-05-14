@@ -552,9 +552,11 @@ body {
 }
 
 .diag-opcion-btn.selected {
-  border-color: var(--fbd-orange);
-  background: var(--fbd-orange-soft);
-  font-weight: 600;
+  border: 2px solid #ff671b !important; /* Borde naranja de la Fundación */
+  background-color: rgba(255, 103, 27, 0.05); /* Un fondo sutil naranja */
+  color: #ff671b !important; /* Texto en naranja (opcional, según tu diseño) */
+  font-weight: bold !important; /* <--- ESTO PONE LAS LETRAS EN NEGRITA */
+  box-shadow: 0 4px 10px rgba(255, 103, 27, 0.1);
 }
 
 .opcion-indicador { font-size: 1rem; color: var(--fbd-orange); flex-shrink: 0; }
@@ -977,4 +979,195 @@ body {
   .campos-readonly-grid { grid-template-columns: 1fr; }
   .perfil-hero          { flex-direction: column; text-align: center; }
   .vp-ods-list          { flex-direction: column; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TABLERO DE AVANCE
+═══════════════════════════════════════════════════════════════ */
+.tablero-avance {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  padding: 20px 24px 0;
+  background: white;
+  border-bottom: 1.5px solid var(--fbd-gray-mid);
+  overflow-x: auto;
+}
+
+.etapa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 80px;
+  max-width: 100px;
+  opacity: 0.4;
+  transition: opacity var(--transition);
+}
+
+.etapa.activa  { opacity: 1; }
+.etapa.completada { opacity: 1; }
+
+.etapa-circulo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2.5px solid var(--fbd-gray-mid);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--fbd-gray-text);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+
+.etapa.activa .etapa-circulo {
+  border-color: var(--fbd-orange);
+  background: var(--fbd-orange);
+  color: white;
+}
+
+.etapa.completada .etapa-circulo {
+  border-color: var(--fbd-success);
+  background: var(--fbd-success);
+  color: white;
+}
+
+.etapa-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--fbd-gray-text);
+  text-align: center;
+  line-height: 1.3;
+  padding-bottom: 12px;
+}
+
+.etapa.activa .etapa-label { color: var(--fbd-orange); }
+.etapa.completada .etapa-label { color: var(--fbd-success); }
+
+.etapa-linea {
+  flex: 1;
+  height: 2.5px;
+  background: var(--fbd-gray-mid);
+  margin-top: 14px;
+  min-width: 20px;
+  transition: background var(--transition);
+}
+
+.etapa-linea.activa { background: var(--fbd-orange); }
+
+/* ═══════════════════════════════════════════════════════════════
+   BLOQUES DEL FORMULARIO
+═══════════════════════════════════════════════════════════════ */
+.bloque-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--fbd-orange-soft);
+}
+
+.bloque-numero {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--fbd-orange);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bloque-titulo {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--fbd-orange);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CREDENCIALES
+═══════════════════════════════════════════════════════════════ */
+.credenciales-card {
+  max-width: 480px !important;
+  padding: 0 !important;
+}
+
+.credenciales-mensaje {
+  text-align: center;
+  padding: 32px 32px 24px;
+  border-bottom: 1.5px solid var(--fbd-gray-mid);
+}
+
+.credenciales-icono {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.credenciales-mensaje h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--fbd-dark);
+  margin-bottom: 8px;
+}
+
+.credenciales-mensaje p {
+  font-size: 0.9rem;
+  color: var(--fbd-gray-text);
+  line-height: 1.6;
+}
+
+.credenciales-sub {
+  font-weight: 600 !important;
+  color: var(--fbd-orange) !important;
+  margin-top: 8px;
+}
+
+.credenciales-form {
+  padding: 24px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INTENTOS DE DOCUMENTOS
+═══════════════════════════════════════════════════════════════ */
+.doc-intentos {
+  font-size: 0.75rem;
+  color: var(--fbd-warning);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.doc-bloqueado {
+  font-size: 0.75rem;
+  color: var(--fbd-error);
+  font-weight: 600;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TYC — ACCIONES (ocultar enlaces separados)
+═══════════════════════════════════════════════════════════════ */
+.tyc-acciones { display: none; }
+
+/* OCULTAR EL ENCABEZADO NATIVO DEL STEPPER PARA EVITAR DUPLICIDAD */
+::ng-deep .fbd-stepper .mat-horizontal-stepper-header-container {
+  display: none !important;
+}
+
+/* Ajuste opcional para que el contenido no quede muy pegado al tablero */
+.fbd-stepper {
+  margin-top: 20px;
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators
@@ -10,7 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatStepperModule, MatStepper } from '@angular/material/stepper';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -30,6 +30,7 @@ import {
   getPreguntasVisibles,
   ODS_LIST,
   HABILIDADES_VOLUNTARIO,
+  getEmojiNivel,
 } from './diagnostico.data';
 
 import { Component as NgComponent } from '@angular/core';
@@ -135,10 +136,14 @@ export class CompletarPerfilDialogComponent {
 })
 export class AppComponent implements OnInit {
 
+  sarlaftPendiente: boolean = true;
+  mostrarBotonSarlaft: boolean = false;
+  getEmojiNivel = getEmojiNivel;
+  
   @ViewChild('stepper') stepper!: MatStepper;
 
   // ── Selección de actor ─────────────────────────────────────────────────────
-  selectedActor: string = '';
+  selectedActor: any = '';
   actors = [
     { value: 'Organización Social', desc: 'Gestiona ofertas de voluntariado y recibe talento corporativo.' },
     { value: 'Empresa',             desc: 'Conecta a tu equipo con causas sociales de impacto.' },
@@ -221,36 +226,37 @@ export class AppComponent implements OnInit {
     if (!file) return;
 
     if (file.type !== 'application/pdf') {
-      this._snack.open('⚠️ Solo se permiten archivos PDF', '', { duration: 3000, panelClass: 'fbd-snack' });
+      this._snack.open('⚠️ Solo se permiten archivos PDF', '', { duration: 3000 });
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      this._snack.open('⚠️ El archivo no puede superar 10MB', '', { duration: 3000, panelClass: 'fbd-snack' });
-      return;
-    }
+    const doc = this.documentos[idx];
+    doc.archivo = file;
+    doc.estado = 'verificado'; // Estado exitoso según HU-005 [cite: 168]
+    doc.intentos += 1;
 
-    this.documentos[idx].intentos += 1;
-    this.documentos[idx].archivo = file;
-    this.documentos[idx].estado = 'verificado';
+    this._snack.open(`✅ ${doc.nombre} cargado y verificado`, 'CERRAR', { duration: 2000 });
+
+    // LLAMADA CRÍTICA PARA DESBLOQUEAR EL FLUJO
+    this.verificarProgresoDocumentos(); 
     this.resetSarlaft();
   }
 
-  eliminarDocumento(idx: number) {
-    this.documentos[idx].archivo = null;
-    this.documentos[idx].estado = 'sin_cargar';
-    this.resetSarlaft();
-  }
+  eliminarDocumento(idx: number): void {
+    // 1. Obtenemos el documento del listado
+    const doc = this.documentos[idx];
+    
+    // 2. Reseteamos sus valores al estado inicial (HU-005)
+    doc.archivo = null;
+    doc.estado = 'sin_cargar';
+    
+    // 3. Notificamos al usuario
+    this._snack.open(`🗑️ Se ha quitado el archivo de ${doc.nombre}`, 'OK', {
+      duration: 2000
+    });
 
-  getEstadoLabel(estado: EstadoDoc): string {
-    const labels: Record<EstadoDoc, string> = {
-      sin_cargar:  'Sin cargar',
-      pendiente:   '⏳ Pendiente',
-      verificando: '🔍 Verificando...',
-      verificado:  '✅ Verificado',
-      rechazado:   '❌ Rechazado',
-    };
-    return labels[estado];
+    // 4. Actualizamos el progreso para que el botón "Siguiente" se bloquee si era el último
+    this.verificarProgresoDocumentos();
   }
 
   getEstadoClass(estado: EstadoDoc): string {
@@ -262,6 +268,18 @@ export class AppComponent implements OnInit {
       rechazado:   'estado-rechazado',
     };
     return classes[estado];
+  }
+
+  getEstadoLabel(estado: EstadoDoc): string {
+    // Etiquetas de estado requeridas para la traza del proceso (HU-005) [cite: 165]
+    const labels: Record<EstadoDoc, string> = {
+      sin_cargar:  'Sin cargar',
+      pendiente:   'Pendiente',
+      verificando: 'Verificando...',
+      verificado:  'Verificado',
+      rechazado:   'Documento incorrecto', // Mensaje personalizado según HU-005 
+    };
+    return labels[estado];
   }
 
   // ── Diagnósticos ───────────────────────────────────────────────────────────
@@ -283,7 +301,13 @@ export class AppComponent implements OnInit {
   // ── Perfil ─────────────────────────────────────────────────────────────────
   tabPerfilActiva = 0;
   togglesPerfil = {
-    foto: false, cargo: false, restricciones: false, educacion: false, genero: false,
+    foto: false, 
+    cargo: false,
+    restricciones: false,
+    educacion: false,
+    genero: false,
+    sitioWeb: false,
+    redSocial: false,
   };
   fotoPreviewPerfil = '';
   guardadoMsgPerfil = '';
@@ -362,6 +386,13 @@ export class AppComponent implements OnInit {
       usuario:    ['', [Validators.required, Validators.email]],
       contrasena: ['', [Validators.required, Validators.maxLength(8)]],
     });
+
+    // AJUSTE ÉPICA 1 (HU-001/002/003): Guardado automático por bloques en localStorage
+    this.step1BasicInfo.valueChanges.subscribe(val => {
+      if (this.selectedActor) {
+        localStorage.setItem(`fbd_onboarding_${this.selectedActor}`, JSON.stringify(val));
+      }
+    });
   }
 
   private _resetFormulario() {
@@ -396,6 +427,13 @@ export class AppComponent implements OnInit {
     this._resetFormulario();
     this._actualizarValidadores();
 
+    // AJUSTE ÉPICA 1: Recuperar progreso previo si existe (Criterio HU-001/2/3)
+    const guardado = localStorage.getItem(`fbd_onboarding_${this.selectedActor}`);
+    if (guardado) {
+      this.step1BasicInfo.patchValue(JSON.parse(guardado));
+      this._snack.open('✓ Progreso de registro recuperado', '', { duration: 2000 });
+    }
+
     if (actor === 'Voluntario') {
       this.diagConfig = DIAGNOSTICO_VOLUNTARIO;
     } else if (actor === 'Empresa') {
@@ -426,6 +464,7 @@ export class AppComponent implements OnInit {
       c['email'].setValidators([Validators.required, Validators.email]);
       c['celular'].setValidators([Validators.required]);
     } else {
+      // AJUSTE ÉPICA 1: Validación estricta de NIT 9 dígitos (HU-001/002)
       c['nit'].setValidators([Validators.required, Validators.pattern(/^\d{9}$/)]);
       c['repNombre'].setValidators([Validators.required]);
       c['repTipoDoc'].setValidators([Validators.required]);
@@ -446,8 +485,11 @@ export class AppComponent implements OnInit {
     this.documentos = [
       { nombre: 'RUT',                 vigencia: 'Vigencia: menor a 30 días', archivo: null, estado: 'sin_cargar', intentos: 0 },
       { nombre: 'Cámara de Comercio',  vigencia: 'Vigencia: menor a 90 días', archivo: null, estado: 'sin_cargar', intentos: 0 },
-      { nombre: 'Estados Financieros', vigencia: 'Último año fiscal',          archivo: null, estado: 'sin_cargar', intentos: 0 },
     ];
+    // Solo la ONG sube Estados Financieros (HU-001)
+    if (this.esOrganizacion) {
+      this.documentos.push({ nombre: 'Estados Financieros', vigencia: 'Último año fiscal', archivo: null, estado: 'sin_cargar', intentos: 0 });
+    }
     this.resetSarlaft();
   }
 
@@ -459,14 +501,30 @@ export class AppComponent implements OnInit {
     this.mostrarCredenciales = true;
   }
 
-  onAsignarContrasena(): void {
-    this._snack.open(
-      '✅ Su contraseña fue creada. Para continuar haga clic en el botón correspondiente.',
-      '', { duration: 4000, panelClass: 'fbd-snack' }
-    );
-    this.mostrarCredenciales = false;
-    this.stepActual = 2;
-    setTimeout(() => { this.stepper?.next(); }, 300);
+    onAsignarContrasena(): void {
+    this._dialog.open(GenericDialogComponent, {
+      width: '450px',
+      disableClose: true,
+      data: {
+        emoji: '🌟',
+        titulo: '¡Registro Exitoso!',
+        mensaje: 'Gracias, hemos guardado tus datos. Bienvenido a este espacio de conexión. <br><br><b>Tus credenciales se crearon con éxito.</b>',
+        botonText: 'Ir a Cargue de Documentos'
+      }
+    }).afterClosed().subscribe(() => {
+      // 1. APAGAMOS la pantalla de credenciales para que el HTML muestre el Stepper (HU-001/002/003)
+      this.mostrarCredenciales = false; 
+      
+      // 2. ASEGURAMOS que el paso actual sea el 2 (Cargue de Documentos - HU-005)
+      this.stepActual = 2;
+
+      // 3. MOVEMOS el stepper físicamente al paso de documentos
+      setTimeout(() => { 
+        if (this.stepper) {
+          this.stepper.selectedIndex = 1; // El índice 1 es el segundo paso
+        }
+      }, 100);
+    });
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -500,10 +558,9 @@ export class AppComponent implements OnInit {
   // ─────────────────────────────────────────────────────────────────────────
 
   guardarProgreso() {
-    console.log('Progreso guardado:', {
-      actor: this.selectedActor,
-      step1: this.step1BasicInfo.value,
-    });
+    if (this.selectedActor) {
+      localStorage.setItem(`fbd_onboarding_${this.selectedActor}`, JSON.stringify(this.step1BasicInfo.value));
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -591,25 +648,27 @@ export class AppComponent implements OnInit {
   }
 
   irAlPerfil() {
-    if (this.esVoluntario) {
-      this.mostrarPerfil = true;
-      setTimeout(() => {
-        const ref = this._dialog.open(CompletarPerfilDialogComponent, {
-          width: '420px',
-          panelClass: 'fbd-dialog',
-          disableClose: false,
-        });
-        ref.afterClosed().subscribe(result => {
-          if (result === 'completar') {
-            this.tabPerfilActiva = 1;
-          }
-        });
-      }, 300);
-    } else if (this.esOrganizacion) {
-      window.location.href = '/perfil/organizacion';
-    } else if (this.esEmpresa) {
-      window.location.href = '/perfil/empresa';
-    }
+    // HU-009, HU-010, HU-011: Gestión de perfil mediante pestañas
+    this.mostrarPerfil = true; 
+
+    // Lanzamos el pop-up de bienvenida/completar perfil (Criterio HU-009, 010, 011)
+    setTimeout(() => {
+      const mensaje = this.esVoluntario 
+        ? 'Completa tu perfil para mejorar experiencia' 
+        : 'Complete su perfil para conectar con empresas aliadas';
+
+      const ref = this._dialog.open(CompletarPerfilDialogComponent, {
+        width: '420px',
+        panelClass: 'fbd-dialog',
+        data: { mensaje: mensaje } 
+      });
+
+      ref.afterClosed().subscribe(result => {
+        if (result === 'completar') {
+          this.tabPerfilActiva = 1; // Lleva a la pestaña de Perfil Público
+        }
+      });
+    }, 300);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -678,4 +737,51 @@ export class AppComponent implements OnInit {
   get stepLabel3(): string {
     return 'Diagnóstico';
   }
+
+  // ── VALIDACIÓN DE FLUJO (HU-005) ──────────────────────────────────────────
+  
+  verificarProgresoDocumentos(): void {
+    const self = this as any;
+    const docs = self.documentos || [];
+    
+    // Verifica si todos están en 'verificado' [cite: 168]
+    const todosListos = docs.length > 0 && docs.every((d: any) => d.estado === 'verificado');
+
+    if (todosListos) {
+      // Habilitamos la validación Sarlaft (HU-005) [cite: 172]
+      self.sarlaftPendiente = false;
+      self.mostrarBotonSarlaft = true;
+      
+      if (self._snack) {
+        self._snack.open('✅ Documentación validada. Iniciando SARLAFT...', 'OK', { 
+          duration: 3000 
+        });
+      }
+    }
+  }
+}
+@Component({
+  selector: 'app-generic-dialog',
+  standalone: true,
+  imports: [MatButtonModule, MatDialogModule, CommonModule],
+  template: `
+    <div class="dialog-container">
+      <div class="dialog-emoji">{{ data.emoji }}</div>
+      <h2 class="dialog-title">{{ data.titulo }}</h2>
+      <p class="dialog-message" [innerHTML]="data.mensaje"></p>
+      <button mat-flat-button class="dialog-btn" [mat-dialog-close]="true">
+        {{ data.botonText || 'Continuar' }}
+      </button>
+    </div>
+  `,
+  styles: [`
+    .dialog-container { text-align: center; padding: 30px; max-width: 400px; font-family: 'Lexend', sans-serif; }
+    .dialog-emoji { font-size: 60px; margin-bottom: 10px; }
+    .dialog-title { color: #1a1a2e; font-weight: 700; font-size: 24px; margin-bottom: 15px; }
+    .dialog-message { color: #555; line-height: 1.6; font-size: 16px; margin-bottom: 25px; }
+    .dialog-btn { background-color: #ff671b !important; color: white !important; border-radius: 25px !important; padding: 8px 35px !important; font-weight: 600; }
+  `]
+})
+export class GenericDialogComponent {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
 }

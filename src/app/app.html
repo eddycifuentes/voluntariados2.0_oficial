@@ -7,8 +7,16 @@
   </header>
 
   <!-- ══ ONBOARDING ══ -->
-  <ng-container *ngIf="!mostrarPerfil && !mostrarCredenciales">
+    <ng-container *ngIf="mostrarPerfil">
+    </ng-container>
 
+  <ng-container *ngIf="mostrarCredenciales && !mostrarPerfil">
+    <mat-card class="onboarding-card credenciales-card">
+      </mat-card>
+  </ng-container>
+
+  <ng-container *ngIf="!mostrarPerfil && !mostrarCredenciales">
+    
     <!-- SELECCIÓN DE ACTOR -->
     <div class="actor-selector" *ngIf="!selectedActor">
       <h1 class="selector-title">¿Cómo quieres registrarte?</h1>
@@ -266,37 +274,25 @@
               <span class="bloque-numero">{{ esVoluntario ? '2' : '4' }}</span>
               <span class="bloque-titulo">Aceptación de Tratamiento de Datos y Términos y Condiciones</span>
             </div>
+            
             <div class="tyc-block" [formGroup]="step3Tyc">
-
-              <!-- Recuadro 1: Tratamiento de Datos -->
               <div class="tyc-item">
-                <mat-checkbox formControlName="aceptaDatos" color="primary">
-                  He leído y acepto la
-                  <a href="#" target="_blank" class="tyc-link">Política de Tratamiento de Datos</a>
-                  de la Fundación Bolívar Davivienda.
+              <mat-checkbox formControlName="aceptaDatos" color="primary">
+                He leído y acepto la 
+                <a href="https://www.fundacionbolivardavivienda.org/" target="_blank" class="tyc-link">Política de Tratamiento de Datos</a>.
                 </mat-checkbox>
-                <div class="tyc-acciones">
-                  <a href="#" target="_blank" class="tyc-accion-link">📄 Leer documento</a>
-                  <a href="#" download class="tyc-accion-link">⬇️ Descargar PDF</a>
-                  <a href="https://www.fundacionbolivar.org" target="_blank" class="tyc-accion-link">🌐 Sitio web FBD</a>
+                <div class="tyc-acciones" style="display: flex; gap: 12px; margin-top: 8px; font-size: 0.8rem;">
                 </div>
-              </div>
-
-              <!-- Recuadro 2: TyC Plataforma -->
-              <div class="tyc-item">
-                <mat-checkbox formControlName="aceptaTyc" color="primary">
-                  He leído y acepto los
-                  <a href="#" target="_blank" class="tyc-link">Términos y Condiciones</a>
-                  de la plataforma Voluntariado 2.0.
-                </mat-checkbox>
-                <div class="tyc-acciones">
-                  <a href="#" target="_blank" class="tyc-accion-link">📄 Leer documento</a>
-                  <a href="#" download class="tyc-accion-link">⬇️ Descargar PDF</a>
-                  <a href="https://www.fundacionbolivar.org" target="_blank" class="tyc-accion-link">🌐 Sitio web FBD</a>
-                </div>
-              </div>
-
-            </div>
+          </div>
+        <div class="tyc-item">
+        <mat-checkbox formControlName="aceptaTyc" color="primary">
+        He leído y acepto los 
+        <a href="#" target="_blank" class="tyc-link">Términos y Condiciones</a> Plataforma Vol 2.0.
+        </mat-checkbox>
+        <div class="tyc-acciones" style="display: flex; gap: 12px; margin-top: 8px; font-size: 0.8rem;">
+          </div>
+      </div>
+    </div>
 
             <!-- Botón Continuar -->
             <div class="step-actions">
@@ -339,14 +335,12 @@
                     <strong>{{ doc.nombre }}</strong>
                     <span class="doc-vigencia">{{ doc.vigencia }}</span>
                     <span class="doc-archivo" *ngIf="doc.archivo">📄 {{ doc.archivo.name }}</span>
-                    <!-- Indicador de intentos -->
-                    <span class="doc-intentos"
-                          *ngIf="doc.intentos > 0 && doc.estado === 'rechazado'">
-                      ⚠️ Intento {{ doc.intentos }} de 3
+
+                    <span class="doc-intentos" *ngIf="doc.estado === 'rechazado' && doc.intentos < 3">
+                    ⚠️ Intento {{ doc.intentos }} de 3. El documento presenta errores técnicos (ilegibilidad o formato).
                     </span>
-                    <span class="doc-bloqueado"
-                          *ngIf="doc.intentos >= 3 && doc.estado === 'rechazado'">
-                      🔒 Máximo de intentos alcanzado. El administrador ha sido notificado.
+                    <span class="doc-bloqueado" *ngIf="doc.intentos >= 3 && doc.estado === 'rechazado'">
+                    🔒 Máximo de intentos alcanzado. El sistema ha bloqueado la carga automática; un administrador revisará su caso manualmente.
                     </span>
                   </div>
                   <div class="doc-acciones">
@@ -442,13 +436,14 @@
               </div>
 
               <div class="step-actions">
-                <button mat-flat-button class="fbd-button" matStepperNext
-                        (click)="guardarProgreso()"
-                        [disabled]="!sarlaftPuedeAvanzar"
-                        type="button">
-                  SIGUIENTE →
+                <button mat-flat-button class="fbd-button" 
+                (click)="stepper.next(); guardarProgreso()"
+                [disabled]="!sarlaftPuedeAvanzar"
+                type="button">
+                  CONTINUAR AL DIAGNÓSTICO →
                 </button>
               </div>
+
             </ng-container>
 
             <!-- ── VOLUNTARIO: DIAGNÓSTICO ── -->
@@ -477,12 +472,14 @@
   <!-- ══ PANTALLA DE CREDENCIALES ══ -->
   <ng-container *ngIf="mostrarCredenciales">
     <mat-card class="onboarding-card credenciales-card">
-      <div class="credenciales-mensaje">
-        <div class="credenciales-icono">🎉</div>
-        <h2>Gracias, hemos guardado tus datos.</h2>
-        <p>Bienvenido a este espacio de conexión, para que tus acciones contribuyan a un mundo mejor.</p>
-        <p class="credenciales-sub">Para continuar, crea tu usuario y contraseña.</p>
-      </div>
+    <div class="credenciales-mensaje">
+      <div class="credenciales-icono">🎉</div>
+      <h2>Gracias, hemos guardado tus datos.</h2>
+      <p>Bienvenido a este espacio de conexión, para que tus acciones contribuyan a un mundo mejor.</p>
+      <p class="credenciales-sub" style="color: #ff671b; font-weight: 600; margin-top: 12px;">
+      Para continuar crea tu usuario y contraseña.
+      </p>
+    </div>
 
       <form [formGroup]="credencialesForm" class="credenciales-form">
 
@@ -520,342 +517,116 @@
   </ng-container>
   <!-- ══ FIN CREDENCIALES ══ -->
 
-  <!-- ══ PERFIL VOLUNTARIO ══ -->
-  <ng-container *ngIf="mostrarPerfil && esVoluntario">
+  <ng-container *ngIf="mostrarPerfil">
+    
+    <div *ngIf="esOrganizacion || esEmpresa" class="perfil-entidad-view">
+      <mat-tab-group [(selectedIndex)]="tabPerfilActiva">
+        <mat-tab label="👁️ Previsualización">
+          <div class="perfil-card-fbd" style="padding: 30px; text-align: center; background: white;">
+            <div class="badge-nivel" style="background: #fff3e0; color: #ff671b; padding: 10px 20px; border-radius: 20px; display: inline-block; margin-bottom: 15px; font-weight: bold;">
+              Nivel {{ diagNivelResultado?.nombre }} {{ getEmojiNivel(selectedActor, diagNivelResultado?.nombre || '') }}
+            </div>
+            <h1 style="margin: 10px 0; color: #1a1a2e;">{{ step1BasicInfo.get('razonSocial')?.value }}</h1>
+            <p style="color: #666;">NIT: {{ step1BasicInfo.get('nit')?.value }}</p>
 
-    <div class="perfil-hero">
-      <div class="perfil-avatar">
-        <img *ngIf="fotoPreviewPerfil" [src]="fotoPreviewPerfil" alt="Foto" class="avatar-img">
-        <div *ngIf="!fotoPreviewPerfil" class="avatar-placeholder">
-          {{ datosNoEditables.nombres.charAt(0) }}
-        </div>
-      </div>
-      <div class="perfil-hero-info">
-        <h1 class="perfil-nombre">{{ datosNoEditables.nombres }}</h1>
-        <div class="perfil-nivel-badge">🏆 {{ datosDiagnostico.nivel }} · {{ datosDiagnostico.puntaje }} pts</div>
-        <span class="perfil-empresa">{{ datosNoEditables.empresa }}</span>
-      </div>
-      <div class="guardado-msg" *ngIf="guardadoMsgPerfil">{{ guardadoMsgPerfil }}</div>
-      <button mat-stroked-button class="back-btn" style="margin-left:auto" (click)="volverAlInicio()">
-        ← Volver
-      </button>
+            <div class="ods-summary" style="margin-top: 25px;">
+              <h3 style="color: #1a1a2e; border-bottom: 2px solid #ff671b; display: inline-block; padding-bottom: 5px;">Focos de Impacto (ODS)</h3>
+              <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
+                <div *ngFor="let ods of odsTop3Items">
+                  <img [src]="ods.img" [alt]="ods.nombre" width="80" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                </div>
+              </div>
+            </div>
+
+            <button mat-flat-button color="warn" style="margin-top: 40px; border-radius: 25px; padding: 12px 50px; font-weight: bold;" (click)="publicarPerfil()">
+              🚀 PUBLICAR PERFIL EN EL MARKETPLACE
+            </button>
+          </div>
+        </mat-tab>
+
+        <mat-tab label="⚙️ Administrar">
+          <div class="admin-panel" style="padding: 40px; background: white;">
+            <h3 style="margin-bottom: 20px;">Configuración de Privacidad</h3>
+            <mat-slide-toggle color="primary" [checked]="true">
+              Habilitar visibilidad para voluntarios corporativos
+            </mat-slide-toggle>
+            <p style="color: #777; font-size: 0.9rem; margin-top: 15px;">
+              Al activar esto, tu perfil será visible para las empresas aliadas de la Fundación.
+            </p>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
     </div>
 
-    <mat-card class="perfil-card">
-      <mat-tab-group [(selectedIndex)]="tabPerfilActiva" class="perfil-tabs" animationDuration="200ms">
+    <div *ngIf="esVoluntario" class="perfil-voluntario-view">
+      <div class="perfil-hero" style="display: flex; align-items: center; gap: 20px; padding: 30px; background: #f8f9fa; border-radius: 15px;">
+        <div class="perfil-avatar" style="width: 80px; height: 80px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px;">
+          <img *ngIf="fotoPreviewPerfil" [src]="fotoPreviewPerfil" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+          <span *ngIf="!fotoPreviewPerfil">👤</span>
+        </div>
+        <div>
+          <h1 style="margin: 0;">{{ step1BasicInfo.get('razonSocial')?.value }}</h1>
+          <div style="color: #ff671b; font-weight: 600;">🏆 {{ diagNivelResultado?.nombre }}</div>
+        </div>
+        <button mat-stroked-button style="margin-left: auto;" (click)="volverAlInicio()">Cerrar Sesión</button>
+      </div>
+    </div>
 
-        <!-- PESTAÑA 1 — INFORMACIÓN BÁSICA PRIVADA -->
-        <mat-tab label="🔒 Información Básica">
-          <div class="tab-content">
-            <div class="section-header">DATOS NO EDITABLES</div>
-            <div class="campos-readonly-grid">
-              <div class="campo-readonly">
-                <span class="campo-label">Tipo de Documento</span>
-                <span class="campo-valor">{{ datosNoEditables.tipoDoc }}</span>
-              </div>
-              <div class="campo-readonly">
-                <span class="campo-label">Número de Documento</span>
-                <span class="campo-valor">{{ datosNoEditables.numDoc }}</span>
-              </div>
-              <div class="campo-readonly">
-                <span class="campo-label">Nombres y Apellidos</span>
-                <span class="campo-valor">{{ datosNoEditables.nombres }}</span>
-              </div>
-              <div class="campo-readonly">
-                <span class="campo-label">Fecha de Nacimiento</span>
-                <span class="campo-valor">{{ datosNoEditables.fechaNac }}</span>
-              </div>
-              <div class="campo-readonly">
-                <span class="campo-label">Empresa</span>
-                <span class="campo-valor">{{ datosNoEditables.empresa }}</span>
-              </div>
-            </div>
-
-            <div class="section-header" style="margin-top:24px">DATOS EDITABLES</div>
-            <form [formGroup]="step1BasicInfo" class="tab-form">
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Correo Electrónico Corporativo</mat-label>
-                <input matInput formControlName="email" type="email">
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="full-width">
-                <mat-label>Número de Celular</mat-label>
-                <input matInput formControlName="celular" type="tel">
-              </mat-form-field>
-              <div class="tab-actions">
-                <button mat-flat-button class="fbd-button" type="button"
-                        (click)="guardarCambiosPerfil()">
-                  Guardar cambios
-                </button>
-              </div>
-            </form>
-          </div>
-        </mat-tab>
-
-        <!-- PESTAÑA 2 — PERFIL PÚBLICO -->
-        <mat-tab label="👁 Perfil">
-          <div class="tab-content">
-            <p class="tab-desc">
-              Estos datos son <strong>opcionales</strong>.
-              Activa el toggle para hacerlos visibles en el Marketplace.
-            </p>
-
-            <!-- Foto -->
-            <div class="campo-toggle-row">
-              <div class="campo-toggle-info">
-                <span class="campo-toggle-label">Foto de perfil</span>
-                <span class="campo-toggle-hint">Foto corporativa tipo carnet, fondo blanco, rostro completo</span>
-              </div>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.foto"
-                                (change)="onTogglePerfilChange()" color="primary">
-                <span class="toggle-estado">{{ togglesPerfil.foto ? '👁 Público' : '🔒 Privado' }}</span>
-              </mat-slide-toggle>
-            </div>
-            <div class="foto-upload-area" *ngIf="togglesPerfil.foto">
-              <img *ngIf="fotoPreviewPerfil" [src]="fotoPreviewPerfil" class="foto-preview">
-              <div *ngIf="!fotoPreviewPerfil" class="foto-placeholder">Sin foto</div>
-              <label class="upload-btn">
-                Subir foto
-                <input type="file" accept="image/*" hidden (change)="onFotoSeleccionadaPerfil($event)">
-              </label>
-            </div>
-
-            <!-- Cargo -->
-            <div class="campo-toggle-row" style="margin-bottom:16px">
-              <mat-form-field appearance="outline" class="flex-grow" style="margin:0">
-                <mat-label>Cargo dentro de la empresa</mat-label>
-                <input matInput placeholder="Ej: Analista de Desarrollo">
-              </mat-form-field>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.cargo"
-                                (change)="onTogglePerfilChange()" color="primary">
-                <span class="toggle-estado">{{ togglesPerfil.cargo ? '👁' : '🔒' }}</span>
-              </mat-slide-toggle>
-            </div>
-
-            <!-- Restricciones -->
-            <div class="campo-toggle-row" style="margin-bottom:16px">
-              <mat-form-field appearance="outline" class="flex-grow" style="margin:0">
-                <mat-label>Restricciones alimenticias / Alergias</mat-label>
-                <input matInput placeholder="Ej: Vegetariano, Alérgico a nueces">
-              </mat-form-field>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.restricciones"
-                                (change)="onTogglePerfilChange()" color="primary">
-                <span class="toggle-estado">{{ togglesPerfil.restricciones ? '👁' : '🔒' }}</span>
-              </mat-slide-toggle>
-            </div>
-
-            <!-- Nivel educativo -->
-            <div class="campo-toggle-row" style="margin-bottom:16px">
-              <mat-form-field appearance="outline" class="flex-grow" style="margin:0">
-                <mat-label>Nivel educativo</mat-label>
-                <mat-select>
-                  <mat-option *ngFor="let n of nivelesEducativos" [value]="n">{{ n }}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.educacion"
-                                (change)="onTogglePerfilChange()" color="primary">
-                <span class="toggle-estado">{{ togglesPerfil.educacion ? '👁' : '🔒' }}</span>
-              </mat-slide-toggle>
-            </div>
-
-            <!-- Género -->
-            <div class="campo-toggle-row" style="margin-bottom:16px">
-              <mat-form-field appearance="outline" class="flex-grow" style="margin:0">
-                <mat-label>Género</mat-label>
-                <mat-select>
-                  <mat-option *ngFor="let g of generosOpciones" [value]="g">{{ g }}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <mat-slide-toggle [(ngModel)]="togglesPerfil.genero"
-                                (change)="onTogglePerfilChange()" color="primary">
-                <span class="toggle-estado">{{ togglesPerfil.genero ? '👁' : '🔒' }}</span>
-              </mat-slide-toggle>
-            </div>
-          </div>
-        </mat-tab>
-
-        <!-- PESTAÑA 3 — VISTA PREVIA -->
-        <mat-tab label="👤 Vista Previa">
-          <div class="tab-content">
-            <p class="tab-desc">Así verán tu perfil las organizaciones sociales.</p>
-            <div class="vista-previa-card">
-              <div class="vp-header">
-                <div class="perfil-avatar">
-                  <img *ngIf="fotoPreviewPerfil && togglesPerfil.foto"
-                       [src]="fotoPreviewPerfil" class="avatar-img">
-                  <div *ngIf="!fotoPreviewPerfil || !togglesPerfil.foto" class="avatar-placeholder">
-                    {{ datosNoEditables.nombres.charAt(0) }}
-                  </div>
-                </div>
-                <div class="vp-header-info">
-                  <h2 class="vp-nombre">{{ datosNoEditables.nombres }}</h2>
-                  <div class="vp-nivel">
-                    🏆 <strong>{{ datosDiagnostico.nivel }}</strong> · {{ datosDiagnostico.puntaje }} pts
-                  </div>
-                </div>
-              </div>
-
-              <div class="vp-seccion">
-                <div class="vp-seccion-titulo">ÁREAS DE INTERÉS</div>
-                <div class="vp-ods-list">
-                  <div class="vp-ods-item" *ngFor="let ods of odsTop3Items">
-                    <img [src]="ods.img" [alt]="ods.nombre" class="vp-ods-img">
-                    <span class="vp-ods-nombre">{{ ods.nombre }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="vp-seccion">
-                <div class="vp-seccion-titulo">HABILIDAD ESPECIAL</div>
-                <span class="vp-tag">{{ datosDiagnostico.habilidad }}</span>
-              </div>
-
-              <div class="vp-seccion">
-                <div class="vp-seccion-titulo">DISPONIBILIDAD</div>
-                <span class="vp-tag">{{ datosDiagnostico.disponibilidad }}</span>
-              </div>
-
-              <div class="vp-seccion">
-                <div class="vp-seccion-titulo">MOTIVACIÓN</div>
-                <span class="vp-tag">{{ datosDiagnostico.motivacion }}</span>
-              </div>
-            </div>
-
-            <div class="tab-actions">
-              <button mat-stroked-button class="diag-nav-prev" type="button"
-                      (click)="tabPerfilActiva = 1">
-                ← Atrás
-              </button>
-              <button mat-flat-button class="fbd-button fbd-button-lg" type="button"
-                      (click)="publicarPerfil()">
-                🚀 Publicar Perfil
-              </button>
-            </div>
-          </div>
-        </mat-tab>
-
-      </mat-tab-group>
-    </mat-card>
-
+    <div style="text-align: center; margin-top: 30px;">
+      <button mat-button (click)="volverAlInicio()" style="color: #666;">← Volver al Inicio</button>
+    </div>
   </ng-container>
-  <!-- ══ FIN PERFIL VOLUNTARIO ══ -->
 
-  <!-- ══ TEMPLATE COMPARTIDO: DIAGNÓSTICO ══ -->
   <ng-template #diagTemplate>
-    <div class="diag-step">
-
-      <!-- Resultado final -->
-      <div class="diag-resultado" *ngIf="diagCompletado && diagNivelResultado">
-        <div class="diag-nivel-badge">
-          <div class="diag-trofeo">🏆</div>
-          <h2 class="diag-nivel-nombre">{{ diagNivelResultado.nombre }}</h2>
-          <p class="diag-nivel-desc">{{ diagNivelResultado.perfil }}</p>
-          <div class="diag-puntaje">{{ diagPuntajeTotal }} / 100 pts</div>
-        </div>
-        <p class="diag-mensaje">{{ diagNivelResultado.mensajeBienvenida }}</p>
-        <div class="diag-recomendaciones">
-          <h3>Recomendaciones para ti:</h3>
-          <ul>
-            <li *ngFor="let r of diagNivelResultado.recomendaciones">{{ r }}</li>
-          </ul>
-        </div>
-        <button mat-flat-button class="fbd-button fbd-button-lg"
-                (click)="irAlPerfil()" type="button">
-          ✏️ Ir a mi Perfil
-        </button>
+    <div class="diag-container" *ngIf="diagConfig && !diagCompletado">
+      <div class="diag-header">
+        <h2>{{ diagConfig.titulo }}</h2>
+        <mat-progress-bar mode="determinate" [value]="diagProgresoPct" class="diag-progress"></mat-progress-bar>
+        <span class="diag-pct">{{ diagProgresoPct }}% completado</span>
       </div>
 
-      <!-- Cuestionario -->
-      <ng-container *ngIf="!diagCompletado && diagPregunta">
-
-        <div class="diag-header">
-          <span class="diag-titulo">{{ diagConfig?.titulo }}</span>
-          <span class="diag-progreso-label">
-            {{ diagPreguntaActual + 1 }} / {{ diagPreguntasVisibles.length }}
-          </span>
-        </div>
-        <mat-progress-bar mode="determinate" [value]="diagProgresoPct"
-                          class="diag-progress-bar">
-        </mat-progress-bar>
-
-        <div class="diag-card">
-          <div class="diag-dimension">{{ diagPregunta.dimension }}</div>
-          <h3 class="diag-pregunta">{{ diagPregunta.pregunta }}</h3>
-          <p class="diag-nota" *ngIf="diagPregunta.notaSubtitulo">
-            {{ diagPregunta.notaSubtitulo }}
-          </p>
-
-          <!-- Alerta gatekeeper empresa (ARL) -->
-          <div class="gatekeeper-alert"
-               *ngIf="diagPregunta.id === 1 && esEmpresa && diagRespuestas[diagPreguntaActual] === 0">
-            ⚠️ Si seleccionas "No cubiertos", solo podrás acceder a jornadas virtuales.
-          </div>
-
-          <!-- Selección única -->
-          <div class="diag-opciones" *ngIf="diagPregunta.tipoSeleccion === 'unica'">
+      <div class="diag-card" *ngIf="diagPregunta">
+        <h3 class="diag-pregunta-texto">{{ diagPregunta.pregunta }}</h3>
+        
+        <div class="diag-opciones">
+          <div *ngIf="diagPregunta.tipoSeleccion === 'unica'">
             <button *ngFor="let op of diagPregunta.opciones; let oi = index"
+                    type="button"
                     class="diag-opcion-btn"
-                    [class.selected]="diagRespuestas[diagPreguntaActual] === oi"
-                    (click)="seleccionarOpcion(oi)" type="button">
-              <span class="opcion-indicador">
-                {{ diagRespuestas[diagPreguntaActual] === oi ? '●' : '○' }}
-              </span>
+                    [class.seleccionada]="diagRespuestas[diagPreguntaActual] === oi"
+                    (click)="seleccionarOpcion(oi)">
               {{ op.texto }}
             </button>
           </div>
-
-          <!-- Selección múltiple -->
-          <div class="diag-opciones" *ngIf="diagPregunta.tipoSeleccion === 'multiple'">
-
-            <!-- ODS (pregunta 1 voluntario) -->
-            <ng-container *ngIf="diagPregunta.id === 1 && esVoluntario; else otrasMultiples">
-              <div class="ods-grid">
-                <button *ngFor="let ods of ODS_LIST; let oi = index"
-                        class="ods-card"
-                        [class.ods-selected]="diagMultipleSeleccion[diagPreguntaActual][oi]"
-                        [style.border-color]="diagMultipleSeleccion[diagPreguntaActual][oi]
-                          ? ods.color : 'transparent'"
-                        (click)="toggleMultiple(diagPreguntaActual, oi)"
-                        type="button">
-                  <img [src]="ods.img" [alt]="ods.nombre" class="ods-img">
-                  <div class="ods-check"
-                       *ngIf="diagMultipleSeleccion[diagPreguntaActual][oi]">✓</div>
-                </button>
-              </div>
-            </ng-container>
-
-            <!-- Opciones normales múltiple -->
-            <ng-template #otrasMultiples>
-              <button *ngFor="let op of diagPregunta.opciones; let oi = index"
-                      class="diag-opcion-btn"
-                      [class.selected]="diagMultipleSeleccion[diagPreguntaActual][oi]"
-                      (click)="toggleMultiple(diagPreguntaActual, oi)" type="button">
-                <span class="opcion-indicador">
-                  {{ diagMultipleSeleccion[diagPreguntaActual][oi] ? '☑' : '☐' }}
-                </span>
-                {{ op.texto }}
-              </button>
-            </ng-template>
-
+          <div *ngIf="diagPregunta.tipoSeleccion === 'multiple'">
+            <mat-checkbox *ngFor="let op of diagPregunta.opciones; let oi = index"
+                          [(ngModel)]="diagMultipleSeleccion[diagPreguntaActual][oi]"
+                          color="primary" class="diag-check">
+              {{ op.texto }}
+            </mat-checkbox>
           </div>
-
         </div>
+      </div>
 
-        <div class="diag-nav">
-          <button mat-stroked-button class="diag-nav-prev" type="button"
-                  [disabled]="diagPreguntaActual === 0" (click)="diagAnterior()">
-            ← Atrás
-          </button>
-          <button mat-flat-button class="fbd-button" type="button"
-                  [disabled]="!diagPuedeSiguiente" (click)="diagSiguiente()">
-            {{ diagPreguntaActual === diagPreguntasVisibles.length - 1
-              ? 'Enviar Diagnóstico ✓'
-              : 'Siguiente →' }}
-          </button>
+      <div class="diag-footer">
+        <button mat-button (click)="diagAnterior()" [disabled]="diagPreguntaActual === 0">Anterior</button>
+        <button mat-flat-button color="warn" (click)="diagSiguiente()" [disabled]="!diagPuedeSiguiente">
+          {{ diagPreguntaActual === diagPreguntasVisibles.length - 1 ? 'Finalizar' : 'Siguiente' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="diag-resultado" *ngIf="diagCompletado">
+      <div class="resultado-header">
+        <span class="resultado-emoji">🎉</span>
+        <h2>¡Diagnóstico Finalizado!</h2>
+        <div class="nivel-badge">
+          Nivel Obtenido: <strong>{{ diagNivelResultado?.nombre }}</strong>
         </div>
-
-      </ng-container>
+      </div>
+      <p class="resultado-desc">¡Felicidades! Has alcanzado un nivel de madurez <strong>{{ diagNivelResultado?.nombre }}</strong> en nuestra plataforma.</p>
+      <button mat-flat-button class="fbd-button" (click)="irAlPerfil()">VER MI PERFIL</button>
     </div>
   </ng-template>
-  <!-- ══ FIN TEMPLATE DIAGNÓSTICO ══ -->
 
-</div>
+</div> 

@@ -1,0 +1,53 @@
+<mat-form-field appearance="outline">
+  <mat-label>NIT de la Empresa</mat-label>
+  <input matInput formControlName="nit"> </mat-form-field>
+
+<div class="seccion-representante">
+  <h3>Datos del Representante Legal</h3>
+  
+  <mat-form-field appearance="outline">
+    <mat-label>Tipo de Documento</mat-label>
+    <mat-select formControlName="repTipoDoc"> <mat-option value="CC">Cédula de Ciudadanía</mat-option>
+      <mat-option value="CE">Cédula de Extranjería</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Número de Documento</mat-label>
+    <input matInput formControlName="repNumDoc"> </mat-form-field>
+</div>
+
+<div style="margin: 25px 0; padding: 20px; border: 2px dashed #003366; border-radius: 12px; background: #f0f4f8;">
+  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+    <mat-icon style="color: #003366;">verified_user</mat-icon>
+    <h3 style="color: #003366; margin: 0; font-weight: bold;">Validación Legal para Marketplace</h3>
+  </div>
+  
+  <p style="font-size: 13px; color: #444; margin-bottom: 20px;">
+    Adjunte los soportes en <strong>PDF</strong>. Nuestra IA validará el NIT y la identidad del representante.
+  </p>
+
+  <div style="display: flex; flex-direction: column; gap: 15px;">
+    <app-selector-archivos 
+      titulo="RUT (Actualizado)" 
+      (fileChanged)="documentosParaIA['rut'] = $event">
+    </app-selector-archivos>
+
+    <app-selector-archivos 
+      titulo="Cámara de Comercio" 
+      (fileChanged)="documentosParaIA['camara'] = $event">
+    </app-selector-archivos>
+
+    <app-selector-archivos 
+      titulo="Cédula Representante (SARLAFT)" 
+      (fileChanged)="documentosParaIA['cedula_rep'] = $event">
+    </app-selector-archivos>
+  </div>
+</div>
+
+<button mat-flat-button 
+        color="primary" 
+        style="width: 100%; height: 48px; font-weight: bold;"
+        [disabled]="formTab1.invalid || !aceptaTerminos || !aceptaHabeasData"
+        (click)="procesarRegistroEmpresa()"> 🚀 REGISTRAR EMPRESA Y CONTINUAR
+</button>

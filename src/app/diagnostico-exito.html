@@ -1,0 +1,74 @@
+<div class="exito-container">
+
+  @if (resultado && nivelDetalle) {
+
+    <!-- HEADER FBD -->
+    <header class="exito-header">
+      <img src="logo-fbd.png" alt="Fundación Bolívar Davivienda" class="fbd-logo">
+    </header>
+
+    <!-- INSIGNIA Y NIVEL -->
+    <div class="exito-hero">
+      <div class="insignia-grande">{{ insignia }}</div>
+      <p class="exito-eyebrow">¡Diagnóstico completado!</p>
+      <h1 class="exito-nivel">Eres {{ resultado.nivel }}</h1>
+      <div class="exito-puntaje">
+        <mat-icon>workspace_premium</mat-icon>
+        <span><strong>{{ resultado.puntaje }}</strong> / 100 puntos</span>
+      </div>
+    </div>
+
+    <!-- TARJETA DE PERFIL Y MENSAJE -->
+    <mat-card class="exito-card">
+
+      <div class="exito-section">
+        <div class="exito-section-titulo">Tu perfil</div>
+        <p class="exito-perfil-desc">{{ nivelDetalle.perfil }}</p>
+      </div>
+
+      <div class="exito-divider"></div>
+
+      <div class="exito-section">
+        <div class="exito-section-titulo">Mensaje de bienvenida</div>
+        <p class="exito-mensaje">{{ nivelDetalle.mensajeBienvenida }}</p>
+      </div>
+
+      <div class="exito-divider"></div>
+
+      <div class="exito-section">
+        <div class="exito-section-titulo">
+          <mat-icon>tips_and_updates</mat-icon>
+          Recomendaciones para tu camino
+        </div>
+        <ul class="exito-recomendaciones">
+          @for (reco of nivelDetalle.recomendaciones; track $index) {
+            <li>
+              <mat-icon class="reco-icon">arrow_circle_right</mat-icon>
+              <span>{{ reco }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+
+    </mat-card>
+
+    <!-- CTA -->
+    <div class="exito-actions">
+      <button mat-flat-button class="btn-perfil" (click)="irAPerfil()">
+        <mat-icon>edit</mat-icon>
+        Completa tu perfil de {{ actorLabel }}
+      </button>
+      <p class="exito-footnote">
+        Te llevamos al siguiente paso del onboarding.
+      </p>
+    </div>
+
+  } @else {
+    <!-- Estado vacío: si llega aquí sin resultado, mostramos un loader corto -->
+    <div class="exito-loading">
+      <mat-icon>hourglass_empty</mat-icon>
+      <p>Cargando tu resultado...</p>
+    </div>
+  }
+
+</div>

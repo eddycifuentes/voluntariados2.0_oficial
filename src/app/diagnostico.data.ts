@@ -1,5 +1,6 @@
 // diagnostico.data.ts
 // Actualizado según HU-006, HU-007, HU-008 — Épica 1 v2.0
+// Pesos del voluntario corregidos: 25/25/25/25 según PDF
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TIPOS BASE
@@ -27,7 +28,7 @@ export interface PreguntaDiagnostico {
 
 export interface NivelMadurez {
   nombre: string;
-  perfil: string;                // Descripción del perfil
+  perfil: string;
   puntajeMin: number;
   puntajeMax: number;
   mensajeBienvenida: string;
@@ -41,6 +42,8 @@ export interface DiagnosticoConfig {
   preguntas: PreguntaDiagnostico[];
   niveles: NivelMadurez[];
 }
+
+export type TipoActor = 'organizacion' | 'empresa' | 'voluntario';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ODS — Lista de los 17 Objetivos de Desarrollo Sostenible
@@ -67,22 +70,26 @@ export const ODS_LIST = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// HABILIDADES — Voluntario
+// HABILIDADES — Voluntario (HU-009)
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const HABILIDADES_VOLUNTARIO = [
-  'Cuidado y Bienestar: Primeros auxilios, salud mental, nutrición o salud pública.',
-  'Conexión Global: Traducción, interpretación o enseñanza de idiomas.',
-  'Gestión Ambiental: Residuos, eficiencia energética y huella de carbono.',
-  'Seguridad Digital: Protección de datos, redes seguras y prevención de riesgos.',
-  'Fortalecimiento de Liderazgo: Resolución de conflictos, oratoria y gestión de equipos.',
-  'Otro talento: Cuéntanos cuál es tu especialidad.',
+  'Finanzas',
+  'Estrategia de negocios',
+  'Gestión de proyectos',
+  'Comunicación',
+  'Desarrollo humano',
+  'Salud y bienestar',
+  'Tecnología',
+  'Aspectos legales',
+  'Pedagogía',
+  'Conservación ambiental y ecología',
+  'Mercadeo, ventas y servicio',
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DIAGNÓSTICO: ORGANIZACIÓN SOCIAL (HU-006)
-// 11 preguntas en total — 9 visibles + 2 precalculadas (no se muestran al usuario)
-// Puntaje máximo: 100 puntos
+// 11 preguntas — 9 visibles + 2 precalculadas — Puntaje máximo: 100
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
@@ -90,7 +97,6 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
   titulo: 'Diagnóstico de Madurez — Organización Social',
   puntajeMaximo: 100,
   preguntas: [
-    // ── PRECALCULADAS (no visibles para el usuario) ──────────────────────────
     {
       id: 1,
       dimension: 'Legalidad y Transparencia',
@@ -101,7 +107,7 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
       opciones: [
         { texto: 'Riesgo Alto',  puntos: 0,  nivelAlcanzado: 0 },
         { texto: 'Riesgo Medio', puntos: 10, nivelAlcanzado: 1 },
-        { texto: 'Riesgo Bajo',  puntos: 20, nivelAlcanzado: 2 },
+        { texto: 'Riesgo Bajo',  puntos: 15, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -117,8 +123,6 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
         { texto: 'Más de 5 años',     puntos: 5, nivelAlcanzado: 2 },
       ],
     },
-
-    // ── VISIBLES PARA EL USUARIO (9 preguntas) ───────────────────────────────
     {
       id: 2,
       dimension: 'Legalidad y Transparencia',
@@ -126,9 +130,9 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
       pregunta: '¿Cuenta con política de tratamiento de datos (Habeas Data) y Manual de ética?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'No tiene',                                            puntos: 0,  nivelAlcanzado: 0 },
-        { texto: 'Solo tiene uno o tiene los dos pero no están publicados.', puntos: 5,  nivelAlcanzado: 1 },
-        { texto: 'Tiene ambos y están publicados.',                    puntos: 10, nivelAlcanzado: 2 },
+        { texto: 'No tiene',                                                     puntos: 0,  nivelAlcanzado: 0 },
+        { texto: 'Solo tiene uno o tiene los dos pero no están publicados.',     puntos: 7,  nivelAlcanzado: 1 },
+        { texto: 'Tiene ambos y están publicados.',                              puntos: 15, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -138,9 +142,9 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
       pregunta: '¿Ha trabajado previamente con empresas en programas de voluntariado?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Nunca.',                                   puntos: 0,  nivelAlcanzado: 0 },
-        { texto: '1 o 2 experiencias previas.',              puntos: 8,  nivelAlcanzado: 1 },
-        { texto: 'Alianzas recurrentes con varias empresas.',puntos: 15, nivelAlcanzado: 2 },
+        { texto: 'Nunca.',                                    puntos: 0,  nivelAlcanzado: 0 },
+        { texto: '1 o 2 experiencias previas.',               puntos: 8,  nivelAlcanzado: 1 },
+        { texto: 'Alianzas recurrentes con varias empresas.', puntos: 15, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -163,9 +167,9 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
       pregunta: '¿Cómo registra actualmente el impacto de las actividades?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'No registra (solo fotos).',                         puntos: 1, nivelAlcanzado: 0 },
-        { texto: 'Excel / Listas físicas.',                           puntos: 5, nivelAlcanzado: 1 },
-        { texto: 'Software de gestión de indicadores (KPIs).',        puntos: 10, nivelAlcanzado: 2 },
+        { texto: 'No registra (solo fotos).',                  puntos: 1,  nivelAlcanzado: 0 },
+        { texto: 'Excel / Listas físicas.',                    puntos: 5,  nivelAlcanzado: 1 },
+        { texto: 'Software de gestión de indicadores (KPIs).', puntos: 10, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -199,8 +203,8 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
       pregunta: '¿Cuál es tu capacidad de diseño de proyectos con aliados?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Ejecutamos lo que la empresa pide o propone.',                                          puntos: 2, nivelAlcanzado: 0 },
-        { texto: 'Adaptamos nuestras jornadas estándar a la marca de la empresa.',                        puntos: 5, nivelAlcanzado: 1 },
+        { texto: 'Ejecutamos lo que la empresa pide o propone.',                                                puntos: 2,  nivelAlcanzado: 0 },
+        { texto: 'Adaptamos nuestras jornadas estándar a la marca de la empresa.',                              puntos: 5,  nivelAlcanzado: 1 },
         { texto: 'Co-creamos: Diseñamos misiones desde cero para resolver retos de la empresa y la comunidad.', puntos: 10, nivelAlcanzado: 2 },
       ],
     },
@@ -211,9 +215,9 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
       pregunta: '¿Cómo se vincula con otras organizaciones o redes?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Trabajamos de forma independiente y aislada.',                                          puntos: 2, nivelAlcanzado: 0 },
-        { texto: 'Pertenecemos a redes de ONGs.',                                                         puntos: 5, nivelAlcanzado: 1 },
-        { texto: 'Liderazgo en red: Lideramos mesas de trabajo sectoriales o alianzas público-privadas.',puntos: 10, nivelAlcanzado: 2 },
+        { texto: 'Trabajamos de forma independiente y aislada.',                                            puntos: 2,  nivelAlcanzado: 0 },
+        { texto: 'Pertenecemos a redes de ONGs.',                                                           puntos: 5,  nivelAlcanzado: 1 },
+        { texto: 'Liderazgo en red: Lideramos mesas de trabajo sectoriales o alianzas público-privadas.',   puntos: 10, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -223,9 +227,9 @@ export const DIAGNOSTICO_ORGANIZACION: DiagnosticoConfig = {
       pregunta: '¿Qué nivel de incidencia o influencia tiene su organización?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Nos enfocamos exclusivamente en la ejecución local/territorial.',                               puntos: 2,  nivelAlcanzado: 0 },
-        { texto: 'Participamos en espacios de discusión de política pública o sectorial.',                        puntos: 5,  nivelAlcanzado: 1 },
-        { texto: 'Referente: Somos consultores o influenciadores en estándares de impacto para nuestra causa.',  puntos: 10, nivelAlcanzado: 2 },
+        { texto: 'Nos enfocamos exclusivamente en la ejecución local/territorial.',                              puntos: 2,  nivelAlcanzado: 0 },
+        { texto: 'Participamos en espacios de discusión de política pública o sectorial.',                       puntos: 5,  nivelAlcanzado: 1 },
+        { texto: 'Referente: Somos consultores o influenciadores en estándares de impacto para nuestra causa.', puntos: 10, nivelAlcanzado: 2 },
       ],
     },
   ],
@@ -283,9 +287,9 @@ export const DIAGNOSTICO_EMPRESA: DiagnosticoConfig = {
       tipoSeleccion: 'unica',
       notaSubtitulo: 'Si la respuesta es "No cubiertos", solo podrás acceder a jornadas virtuales.',
       opciones: [
-        { texto: 'No cubiertos.',                                                    puntos: 0,  nivelAlcanzado: 0, esGatekeeper: true, reglaBloqueo: 'Solo puede ser Exploradora.' },
-        { texto: 'Cubiertos solo en horario laboral.',                               puntos: 10, nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
-        { texto: 'Cubiertos 24/7 solo en misiones oficiales de la empresa.',         puntos: 20, nivelAlcanzado: 2 },
+        { texto: 'No cubiertos.',                                            puntos: 0,  nivelAlcanzado: 0, esGatekeeper: true, reglaBloqueo: 'Solo puede ser Exploradora.' },
+        { texto: 'Cubiertos solo en horario laboral.',                       puntos: 10, nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
+        { texto: 'Cubiertos 24/7 solo en misiones oficiales de la empresa.', puntos: 20, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -295,9 +299,9 @@ export const DIAGNOSTICO_EMPRESA: DiagnosticoConfig = {
       pregunta: '¿Cuántas horas laborales al año se permiten por empleado para voluntariado?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Ninguna.',          puntos: 0,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
-        { texto: 'Entre 1 y 8 horas.',puntos: 5,  nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
-        { texto: 'Más de 8 horas.',   puntos: 15, nivelAlcanzado: 2 },
+        { texto: 'Ninguna.',           puntos: 0,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
+        { texto: 'Entre 1 y 8 horas.', puntos: 5,  nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
+        { texto: 'Más de 8 horas.',    puntos: 15, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -307,9 +311,9 @@ export const DIAGNOSTICO_EMPRESA: DiagnosticoConfig = {
       pregunta: '¿Tienen un presupuesto anual asignado exclusivamente para logística de voluntariado?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'No tiene.',                          puntos: 0,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
-        { texto: 'Presupuesto variable / improvisado.',puntos: 5,  nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
-        { texto: 'Presupuesto fijo aprobado anual.',   puntos: 15, nivelAlcanzado: 2 },
+        { texto: 'No tiene.',                           puntos: 0,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
+        { texto: 'Presupuesto variable / improvisado.', puntos: 5,  nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
+        { texto: 'Presupuesto fijo aprobado anual.',    puntos: 15, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -319,9 +323,9 @@ export const DIAGNOSTICO_EMPRESA: DiagnosticoConfig = {
       pregunta: '¿Se promueve el voluntariado profesional basado en habilidades (Skill-based)?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'No, solo actividades puntuales de mano de obra.',                                                                   puntos: 0,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
-        { texto: 'Sí, hacemos voluntariado de mano de obra y algunos de transferencia de conocimientos básicos.',                     puntos: 10, nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
-        { texto: 'Sí, tenemos voluntarios altamente calificados que donan tiempo para resolver problemas estructurales de ONGs.',     puntos: 15, nivelAlcanzado: 2 },
+        { texto: 'No, solo actividades puntuales de mano de obra.',                                                                puntos: 0,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
+        { texto: 'Sí, hacemos voluntariado de mano de obra y algunos de transferencia de conocimientos básicos.',                  puntos: 10, nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
+        { texto: 'Sí, tenemos voluntarios altamente calificados que donan tiempo para resolver problemas estructurales de ONGs.',  puntos: 15, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -331,9 +335,9 @@ export const DIAGNOSTICO_EMPRESA: DiagnosticoConfig = {
       pregunta: '¿Cómo se reconoce internamente al empleado que hace voluntariado?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'No hay reconocimiento.',                                  puntos: 0,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
-        { texto: 'Agradecimiento en medios internos de comunicación.',      puntos: 5,  nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
-        { texto: 'Puntos para ascensos / evaluación de desempeño.',         puntos: 15, nivelAlcanzado: 2 },
+        { texto: 'No hay reconocimiento.',                              puntos: 0,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
+        { texto: 'Agradecimiento en medios internos de comunicación.',  puntos: 5,  nivelAlcanzado: 1, reglaBloqueo: 'No puede ser Líder de Transformación.' },
+        { texto: 'Puntos para ascensos / evaluación de desempeño.',     puntos: 15, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -343,9 +347,9 @@ export const DIAGNOSTICO_EMPRESA: DiagnosticoConfig = {
       pregunta: '¿Cómo recopila y analiza los datos de sus jornadas de voluntariado?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'De forma manual y anecdótica (WhatsApp, estimaciones a final de año).',                                                     puntos: 3, nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
-        { texto: 'Usamos hojas de cálculo compartidas para tabular horas, número de voluntarios y dinero invertido.',                         puntos: 6, nivelAlcanzado: 1 },
-        { texto: 'Usamos tableros de control en tiempo real (Dashboards) que cruzan asistencia, habilidades donadas y satisfacción.',         puntos: 10, nivelAlcanzado: 2 },
+        { texto: 'De forma manual y anecdótica (WhatsApp, estimaciones a final de año).',                                                     puntos: 3,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
+        { texto: 'Usamos hojas de cálculo compartidas para tabular horas, número de voluntarios y dinero invertido.',                          puntos: 6,  nivelAlcanzado: 1 },
+        { texto: 'Usamos tableros de control en tiempo real (Dashboards) que cruzan asistencia, habilidades donadas y satisfacción.',          puntos: 10, nivelAlcanzado: 2 },
       ],
     },
     {
@@ -355,9 +359,9 @@ export const DIAGNOSTICO_EMPRESA: DiagnosticoConfig = {
       pregunta: '¿Qué tipos de KPIs se presentan al comité de gerencia o junta directiva?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Métricas de volumen (voluntarios, comunidades impactadas). No hay conexión con el negocio.',                                                      puntos: 3,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
-        { texto: 'Métricas de eficiencia e inversión (costo hora por voluntario, % participación, horas acumuladas por año).',                                      puntos: 6,  nivelAlcanzado: 1 },
-        { texto: 'Métricas de impacto de negocio y SROI (retención de empleados voluntarios vs no voluntarios; desarrollo de habilidades de liderazgo).',           puntos: 10, nivelAlcanzado: 2 },
+        { texto: 'Métricas de volumen (voluntarios, comunidades impactadas). No hay conexión con el negocio.',                                                   puntos: 3,  nivelAlcanzado: 0, reglaBloqueo: 'Solo puede ser Exploradora.' },
+        { texto: 'Métricas de eficiencia e inversión (costo hora por voluntario, % participación, horas acumuladas por año).',                                   puntos: 6,  nivelAlcanzado: 1 },
+        { texto: 'Métricas de impacto de negocio y SROI (retención de empleados voluntarios vs no voluntarios; desarrollo de habilidades de liderazgo).',        puntos: 10, nivelAlcanzado: 2 },
       ],
     },
   ],
@@ -401,6 +405,7 @@ export const DIAGNOSTICO_EMPRESA: DiagnosticoConfig = {
 // ─────────────────────────────────────────────────────────────────────────────
 // DIAGNÓSTICO: VOLUNTARIO (HU-008)
 // 4 preguntas — 4 dimensiones — Puntaje máximo: 100
+// Pesos corregidos: 25/25/25/25 según PDF
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const DIAGNOSTICO_VOLUNTARIO: DiagnosticoConfig = {
@@ -415,8 +420,8 @@ export const DIAGNOSTICO_VOLUNTARIO: DiagnosticoConfig = {
       pregunta: '¿Cuál es tu trayectoria previa en actividades de impacto social o voluntariado?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'No he participado nunca o lo he hecho de forma muy puntual (1 o 2 veces).',          puntos: 0,    nivelAlcanzado: 0 },
-        { texto: 'Participo de forma recurrente y tengo experiencia en actividades técnicas o de campo.',puntos: 11.1, nivelAlcanzado: 1 },
+        { texto: 'No he participado nunca o lo he hecho de forma muy puntual (1 o 2 veces).',           puntos: 0,    nivelAlcanzado: 0 },
+        { texto: 'Participo de forma recurrente y tengo experiencia en actividades técnicas o de campo.',puntos: 12.5, nivelAlcanzado: 1 },
         { texto: 'Tengo una trayectoria consolidada y he diseñado o gestionado mis propias iniciativas.',puntos: 25,   nivelAlcanzado: 2 },
       ],
     },
@@ -427,33 +432,33 @@ export const DIAGNOSTICO_VOLUNTARIO: DiagnosticoConfig = {
       pregunta: '¿Qué tipo de conocimiento o talento te sientes listo para aportar hoy?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Aporte operativo y logístico (apoyo manual, siembra, pintura, organización de eventos).',                    puntos: 0,    nivelAlcanzado: 0 },
-        { texto: 'Aporte profesional técnico (enseñanza, desarrollo de software, asesoría legal, mercadeo, médica).',          puntos: 11.1, nivelAlcanzado: 1 },
-        { texto: 'Aporte estratégico y de gestión (mentoría a líderes, consultoría en gobernanza o innovación social).',       puntos: 25,   nivelAlcanzado: 2 },
+        { texto: 'Aporte operativo y logístico (apoyo manual, siembra, pintura, organización de eventos).',                  puntos: 0,    nivelAlcanzado: 0 },
+        { texto: 'Aporte profesional técnico (enseñanza, desarrollo de software, asesoría legal, mercadeo, médica).',         puntos: 12.5, nivelAlcanzado: 1 },
+        { texto: 'Aporte estratégico y de gestión (mentoría a líderes, consultoría en gobernanza o innovación social).',     puntos: 25,   nivelAlcanzado: 2 },
       ],
     },
     {
       id: 3,
       dimension: 'Motivación',
-      peso: 20,
+      peso: 25,
       pregunta: '¿Cuál es tu objetivo principal al realizar una actividad de voluntariado?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Explorar nuevas causas, conocer gente y vivir experiencias diferentes.',                     puntos: 0,  nivelAlcanzado: 0 },
-        { texto: 'Poner mis conocimientos profesionales al servicio de una causa para generar un resultado.',  puntos: 10, nivelAlcanzado: 1 },
-        { texto: 'Transformar realidades a largo plazo y movilizar a otros para que se sumen al cambio.',      puntos: 20, nivelAlcanzado: 2 },
+        { texto: 'Explorar nuevas causas, conocer gente y vivir experiencias diferentes.',                      puntos: 0,    nivelAlcanzado: 0 },
+        { texto: 'Poner mis conocimientos profesionales al servicio de una causa para generar un resultado.',   puntos: 12.5, nivelAlcanzado: 1 },
+        { texto: 'Transformar realidades a largo plazo y movilizar a otros para que se sumen al cambio.',       puntos: 25,   nivelAlcanzado: 2 },
       ],
     },
     {
       id: 4,
       dimension: 'Liderazgo',
-      peso: 30,
+      peso: 25,
       pregunta: '¿Cómo prefieres actuar cuando trabajas en equipo dentro de una misión de Voluntariado?',
       tipoSeleccion: 'unica',
       opciones: [
-        { texto: 'Prefiero seguir instrucciones claras y apoyar en las tareas asignadas por un coordinador.',             puntos: 0,  nivelAlcanzado: 0 },
-        { texto: 'Me siento cómodo coordinando tareas específicas o guiando a grupos pequeños en el terreno.',            puntos: 15, nivelAlcanzado: 1 },
-        { texto: 'Me motiva inspirar a otros, mentorizar a nuevos voluntarios y asegurar que se cumplan los objetivos.',  puntos: 30, nivelAlcanzado: 2 },
+        { texto: 'Prefiero seguir instrucciones claras y apoyar en las tareas asignadas por un coordinador.',           puntos: 0,    nivelAlcanzado: 0 },
+        { texto: 'Me siento cómodo coordinando tareas específicas o guiando a grupos pequeños en el terreno.',          puntos: 12.5, nivelAlcanzado: 1 },
+        { texto: 'Me motiva inspirar a otros, mentorizar a nuevos voluntarios y asegurar que se cumplan los objetivos.',puntos: 25,   nivelAlcanzado: 2 },
       ],
     },
   ],
@@ -498,31 +503,60 @@ export const DIAGNOSTICO_VOLUNTARIO: DiagnosticoConfig = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FUNCIÓN UTILITARIA: calcular nivel según puntaje
+// HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
+
+export function getConfigPorActor(actor: TipoActor): DiagnosticoConfig {
+  switch (actor) {
+    case 'organizacion': return DIAGNOSTICO_ORGANIZACION;
+    case 'empresa':      return DIAGNOSTICO_EMPRESA;
+    case 'voluntario':   return DIAGNOSTICO_VOLUNTARIO;
+  }
+}
 
 export function calcularNivel(config: DiagnosticoConfig, puntaje: number): NivelMadurez | null {
   return config.niveles.find(n => puntaje >= n.puntajeMin && puntaje <= n.puntajeMax) ?? null;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FUNCIÓN UTILITARIA: obtener preguntas visibles (excluye precalculadas)
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function getPreguntasVisibles(config: DiagnosticoConfig): PreguntaDiagnostico[] {
   return config.preguntas.filter(p => !p.precalculada);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// FUNCIÓN UTILITARIA: verificar reglas de bloqueo empresa
-// Retorna true si alguna respuesta bloquea el nivel "Líder de Transformación"
-// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Calcula el puntaje total sumando los puntos de las opciones seleccionadas.
+ * `respuestas` es un mapa: { [preguntaId]: indiceOpcionSeleccionada }
+ */
+export function calcularPuntaje(
+  config: DiagnosticoConfig,
+  respuestas: Record<number, number>,
+): number {
+  let total = 0;
+  for (const pregunta of config.preguntas) {
+    const idxOpcion = respuestas[pregunta.id];
+    if (idxOpcion === undefined || idxOpcion === null) continue;
+    const opcion = pregunta.opciones[idxOpcion];
+    if (opcion) total += opcion.puntos;
+  }
+  return Math.round(total * 10) / 10; // redondear a 1 decimal
+}
 
-export function tieneBloqueoLider(respuestas: (number | null)[], config: DiagnosticoConfig): boolean {
-  return config.preguntas.some((preg, pi) => {
-    const idx = respuestas[pi];
-    if (idx === null) return false;
-    const opcion = preg.opciones[idx];
-    return opcion?.nivelAlcanzado === 0 || opcion?.nivelAlcanzado === 1;
-  });
+/**
+ * Devuelve el emoji asociado a un nivel (para la UI).
+ */
+export function getEmojiNivel(actor: TipoActor, nombreNivel: string): string {
+  const map: Record<string, string> = {
+    // Organización
+    'Emergente':            '🌱',
+    'Consolidada':          '🌿',
+    'Partner Estratégica':  '🌳',
+    // Empresa
+    'Exploradora':           '🚀',
+    'Estratégica':           '⭐',
+    'Líder de Transformación': '🏆',
+    // Voluntario
+    'Explorador':           '🌟',
+    'Especialista':         '💎',
+    'Líder':                '👑',
+  };
+  return map[nombreNivel] ?? '🎉';
 }

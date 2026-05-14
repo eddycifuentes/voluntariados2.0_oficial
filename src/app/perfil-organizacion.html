@@ -47,6 +47,36 @@
             </div>
           </div>
 
+          <div class="fbd-section-header" style="margin-bottom: 15px;">
+            <mat-icon>business</mat-icon>
+            <span>Identificación de la Organización</span>
+          </div>
+
+          <div class="fbd-form-row">
+            <mat-form-field appearance="outline" class="fbd-field">
+              <mat-label>NIT (9 dígitos)</mat-label>
+              <input matInput formControlName="nit" placeholder="Ej: 900123456" maxlength="9">
+              <mat-icon matSuffix>fingerprint</mat-icon>
+              <mat-error *ngIf="formTab1.get('nit')?.errors?.['pattern']">
+                El NIT debe tener exactamente 9 números.
+              </mat-error>
+              <mat-error *ngIf="formTab1.get('nit')?.errors?.['required']">
+                El NIT es obligatorio.
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="fbd-field">
+              <mat-label>Razón Social</mat-label>
+              <input matInput formControlName="razonSocial" placeholder="Nombre oficial (Cámara de Comercio)">
+              <mat-icon matSuffix>assignment</mat-icon>
+              <mat-error *ngIf="formTab1.get('razonSocial')?.invalid">
+                La razón social es obligatoria.
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div style="margin: 10px 0 25px 0; border-bottom: 1px dashed #e0e0e0;"></div>
+
           <!-- Representante Legal -->
           <div class="section-header" style="margin-top:24px">REPRESENTANTE LEGAL</div>
           <form [formGroup]="formTab1" class="tab-form">
@@ -401,17 +431,56 @@
           </div>
 
           <!-- Botón publicar -->
-          <div class="tab-actions">
-            <button mat-flat-button class="fbd-button fbd-button-lg" type="button"
-                    (click)="publicarPerfil()">
-              🚀 Publicar Perfil
+          <div class="tab-actions" style="display: flex; flex-direction: column; gap: 20px; align-items: center; margin-top: 30px; padding: 20px; border-top: 2px solid #f0f0f0;">
+            
+            <div class="legal-checks" style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 500px;">
+              <mat-checkbox [(ngModel)]="aceptaTerminos" color="primary">
+                <span style="font-size: 14px;">Acepto los <strong>Términos y Condiciones</strong> de la plataforma.</span>
+              </mat-checkbox>
+
+              <mat-checkbox [(ngModel)]="aceptaHabeasData" color="primary">
+                <span style="font-size: 14px;">Autorizo el <strong>Tratamiento de Datos Personales</strong> (Ley 1581 de 2012).</span>
+              </mat-checkbox>
+            </div>
+            
+            <div style="margin: 25px 0; padding: 20px; border: 1px dashed #ff671b; border-radius: 8px; background: #fffcfb;">
+              <h3 style="color: #ff671b; margin-top: 0; display: flex; align-items: center; gap: 8px;">
+                <mat-icon>security</mat-icon> Verificación de Confianza con IA
+              </h3>
+              <p style="font-size: 13px; color: #666; margin-bottom: 20px;">
+                Para publicar tu perfil, nuestra IA debe validar la consistencia entre tu NIT y los documentos legales.
+              </p>
+
+              <app-selector-archivos 
+                titulo="RUT (Formato PDF únicamente)" 
+                (fileChanged)="documentosParaIA['rut'] = $event">
+              </app-selector-archivos>
+
+              <app-selector-archivos 
+                titulo="Cámara de Comercio (Formato PDF únicamente)" 
+                (fileChanged)="documentosParaIA['camara'] = $event">
+              </app-selector-archivos>
+            </div>
+
+            <button mat-flat-button 
+                    class="fbd-button fbd-button-lg" 
+                    type="button"
+                    style="width: 100%; max-width: 400px; height: 50px; font-weight: bold;"
+                    [disabled]="formTab1.invalid || formTab2.invalid || !aceptaTerminos || !aceptaHabeasData"
+                    (click)="procesarRegistroConIA()">
+              🚀 PUBLICAR PERFIL EN MARKETPLACE
             </button>
+            
+            <small *ngIf="formTab1.invalid || formTab2.invalid" style="color: #d32f2f;">
+              * Completa todos los campos obligatorios para publicar.
+            </small>
+            <small *ngIf="(formTab1.valid && formTab2.valid) && (!aceptaTerminos || !aceptaHabeasData)" style="color: #ff671b;">
+              * Debes aceptar los términos legales para continuar.
+            </small>
           </div>
 
         </div>
       </mat-tab>
-
     </mat-tab-group>
   </mat-card>
-
 </div>

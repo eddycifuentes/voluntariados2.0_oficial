@@ -15,6 +15,9 @@ import { Component as NgComponent } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { getDepartamentos, getMunicipios } from './dane.data';
 import { ODS_LIST } from './diagnostico.data';
+import { cargarResultado } from './diagnostico-storage';
+import { PersonaService } from './persona.service';
+
 
 // ─── Pop-up "Completa tu perfil" ─────────────────────────────────────────────
 @NgComponent({
@@ -57,39 +60,15 @@ export class CompletarPerfilDialogComponent {
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 export interface PerfilVoluntario {
-  // Pestaña 1 — no editables
-  tipoDoc:    string;
-  numDoc:     string;
-  nombres:    string;
-  fechaNac:   string;
-  empresa:    string;
-  arl:        string;
-  // Pestaña 1 — editables
-  email:      string;
-  celular:    string;
-  eps:        string;
-  departamento: string;
-  municipio:  string;
-  // Pestaña 2 — opcionales
-  foto:       File | null;
-  fotoUrl:    string;
-  cargo:      string;
-  restricciones: string;
-  nivelEducativo: string;
-  genero:     string;
-  // Toggles visibilidad
-  mostrarFoto:          boolean;
-  mostrarCargo:         boolean;
-  mostrarRestricciones: boolean;
-  mostrarEducacion:     boolean;
-  mostrarGenero:        boolean;
-  // Del diagnóstico
-  nivel:       string;
-  puntaje:     number;
-  odsTop3:     number[];
-  habilidad:   string;
-  disponibilidad: string;
-  motivacion:  string;
+  tipoDoc: string; numDoc: string; nombres: string; fechaNac: string;
+  empresa: string; arl: string;
+  email: string; celular: string; eps: string; departamento: string; municipio: string;
+  foto: File | null; fotoUrl: string;
+  cargo: string; restricciones: string; nivelEducativo: string; genero: string;
+  mostrarFoto: boolean; mostrarCargo: boolean; mostrarRestricciones: boolean;
+  mostrarEducacion: boolean; mostrarGenero: boolean;
+  nivel: string; puntaje: number; odsTop3: number[];
+  habilidad: string; disponibilidad: string; motivacion: string;
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -119,39 +98,31 @@ export class PerfilVoluntarioComponent implements OnInit {
     arl:      'Sura ARL',
   };
 
-  // Datos del diagnóstico (vendrían del resultado)
+  // Datos del diagnóstico — niveles ALINEADOS con HU-008 (v2.0):
+  // Explorador (0-35) / Especialista (36-75) / Líder (76-100)
+  // Estos valores se sobrescriben en ngOnInit() si hay un resultado guardado.
   datosDiagnostico = {
-    nivel:    'Bronce',
-    puntaje:  85,
+    nivel:    'Especialista',
+    puntaje:  62,
     odsTop3:  [3, 4, 10],
-    habilidad: 'Salud y Bienestar',
+    habilidad: 'Aporte profesional técnico',
     disponibilidad: 'Lunes y miércoles — Mañana (Virtual)',
-    motivacion: 'Contribuir al desarrollo educativo de comunidades vulnerables',
+    motivacion: 'Poner mis conocimientos profesionales al servicio de una causa.',
   };
 
-  // Formulario pestaña 1 (editables)
   formTab1!: FormGroup;
-
-  // Formulario pestaña 2 (opcionales)
   formTab2!: FormGroup;
 
-  // Toggles de visibilidad
   toggles = {
-    foto:          false,
-    cargo:         false,
-    restricciones: false,
-    educacion:     false,
-    genero:        false,
+    foto: false, cargo: false, restricciones: false, educacion: false, genero: false,
   };
 
-  fotoPreview: string = '';
-  guardadoMsg: string = '';
+  fotoPreview = '';
+  guardadoMsg = '';
 
-  // DANE
   departamentos: string[] = getDepartamentos();
   municipios: string[] = [];
 
-  // Listas
   epsList = [
     'Aliansalud EPS', 'Asmet Salud', 'Cajacopi Atlántico',
     'Capresoca EPS', 'Comfenalco Valle EPS', 'Compensar EPS',
@@ -161,25 +132,28 @@ export class PerfilVoluntarioComponent implements OnInit {
   ];
 
   nivelesEducativos = [
-    'Secundaria', 'Técnico', 'Tecnólogo', 'Universitario',
-    'Especialista', 'Máster', 'Doctorado',
+    'Secundaria', 'Universitario', 'Especialista', 'Máster', 'Doctorado',
   ];
 
-  generosOpciones = [
-    'Masculino', 'Femenino', 'Otro', 'Prefiero no decir',
-  ];
+  generosOpciones = ['Masculino', 'Femenino', 'Otro', 'Prefiero no decir'];
 
   readonly ODS_LIST = ODS_LIST;
+
+  aceptaTerminos: boolean = false;
+  aceptaHabeasData: boolean = false;
+  tipoActor: string = 'VOLUNTARIO'; //
 
   constructor(
     private _fb: FormBuilder,
     private _dialog: MatDialog,
     private _snack: MatSnackBar,
     private _router: Router,
+    private _personaService: PersonaService // <--- Inyectado
   ) {}
 
   ngOnInit() {
     this._initForms();
+    this._cargarResultadoDiagnostico();
     this._mostrarPopup();
   }
 
@@ -199,8 +173,16 @@ export class PerfilVoluntarioComponent implements OnInit {
       genero:        ['Masculino'],
     });
 
-    // Cargar municipios iniciales
     this.municipios = getMunicipios('BOGOTÁ D.C.').sort((a, b) => a.localeCompare(b, 'es'));
+  }
+
+  /** Si el voluntario completó el diagnóstico, leemos su resultado real. */
+  private _cargarResultadoDiagnostico() {
+    const resultado = cargarResultado('voluntario');
+    if (resultado) {
+      this.datosDiagnostico.nivel   = resultado.nivel;
+      this.datosDiagnostico.puntaje = resultado.puntaje;
+    }
   }
 
   private _mostrarPopup() {
@@ -211,9 +193,7 @@ export class PerfilVoluntarioComponent implements OnInit {
         disableClose: true,
       });
       ref.afterClosed().subscribe(result => {
-        if (result === 'completar') {
-          this.tabActiva = 1; // Ir a Perfil Público
-        }
+        if (result === 'completar') this.tabActiva = 1;
       });
     }, 400);
   }
@@ -233,9 +213,7 @@ export class PerfilVoluntarioComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
-  onToggleChange(campo: string) {
-    this._mostrarGuardado();
-  }
+  onToggleChange(_campo: string) { this._mostrarGuardado(); }
 
   private _mostrarGuardado() {
     this.guardadoMsg = '✓ Cambio guardado';
@@ -248,11 +226,46 @@ export class PerfilVoluntarioComponent implements OnInit {
   }
 
   publicarPerfil() {
-    this._snack.open('🚀 ¡Perfil publicado en el Marketplace!', '', { duration: 3500, panelClass: 'fbd-snack' });
+  // 1. Validación Legal (HU-004)
+  if (!this.aceptaHabeasData || !this.aceptaTerminos) {
+    this._snack.open('⚠️ Debes aceptar los términos legales para continuar', '', { duration: 3000 });
+    return;
   }
+
+  // 2. Preparación de datos (HU-003)
+  const datosParaEnviar = {
+    ...this.formTab1.value, // Aquí van: Nombre, Cédula, EPS, etc.
+    tipoActor: this.tipoActor,
+    fechaRegistro: new Date().toISOString()
+  };
+
+  // 3. Envío real a la IP 10.225.133.3
+  this._personaService.registrarPersona(datosParaEnviar).subscribe({
+    next: (respuesta: any) => {
+      this._snack.open('🚀 ¡Perfil de Voluntario publicado con éxito!', 'OK', { 
+        duration: 5000, 
+        panelClass: 'fbd-snack-success' 
+      });
+    },
+    error: (fallo: any) => {
+      this._snack.open('❌ Error al conectar con el servidor', 'Reintentar');
+      console.error('Error:', fallo);
+    }
+  });
+}
 
   get odsTop3Items() {
     return this.ODS_LIST.filter(o => this.datosDiagnostico.odsTop3.includes(o.id));
+  }
+
+  /** Insignia visual coherente con el nivel del diagnóstico voluntario (HU-008). */
+  get nivelInsignia(): string {
+    const map: Record<string, string> = {
+      'Explorador':   '🔭',
+      'Especialista': '🛠️',
+      'Líder':        '⭐',
+    };
+    return map[this.datosDiagnostico.nivel] ?? '🎯';
   }
 
   getFieldError(form: FormGroup, field: string): string {

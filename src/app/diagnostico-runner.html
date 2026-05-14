@@ -1,0 +1,111 @@
+<div class="diagnostico-container">
+
+  <!-- HEADER -->
+  <header class="diagnostico-header">
+    <img src="logo-fbd.png" alt="Fundación Bolívar Davivienda" class="fbd-logo">
+    <span class="fbd-tagline">Plataforma de Voluntariado Corporativo</span>
+  </header>
+
+  <!-- TABLERO DE ETAPAS (4 etapas del onboarding) -->
+  <div class="tablero-etapas">
+    @for (etapa of etapas; track etapa.id; let last = $last) {
+      <div class="etapa"
+           [class.etapa-activa]="etapa.id === etapaActual"
+           [class.etapa-completa]="etapa.id < etapaActual">
+        <div class="etapa-circulo">
+          @if (etapa.id < etapaActual) {
+            <mat-icon>check</mat-icon>
+          } @else {
+            <span>{{ etapa.id }}</span>
+          }
+        </div>
+        <span class="etapa-nombre">{{ etapa.nombre }}</span>
+      </div>
+      @if (!last) { <div class="etapa-conector" [class.completa]="etapa.id < etapaActual"></div> }
+    }
+  </div>
+
+  <!-- TÍTULO + PROGRESO INTERNO -->
+  <div class="diagnostico-titulo-bar">
+    <h1 class="diagnostico-titulo">{{ tituloActor }}</h1>
+    <span class="diagnostico-progreso-text">
+      Pregunta {{ preguntaActual + 1 }} de {{ preguntasVisibles.length }}
+    </span>
+  </div>
+
+  <mat-progress-bar mode="determinate" [value]="progresoPct" class="progreso-bar"></mat-progress-bar>
+
+  <!-- CARD DE PREGUNTA -->
+  <mat-card class="pregunta-card">
+
+    <div class="pregunta-dimension">{{ pregunta.dimension }}</div>
+
+    <h2 class="pregunta-enunciado">{{ pregunta.pregunta }}</h2>
+
+    @if (pregunta.notaSubtitulo) {
+      <p class="pregunta-subtitulo">
+        <mat-icon class="subtitulo-icon">info</mat-icon>
+        {{ pregunta.notaSubtitulo }}
+      </p>
+    }
+
+    <!-- OPCIONES (radio única) -->
+    <mat-radio-group class="opciones-grupo"
+                     [value]="respuestaActual"
+                     (change)="onSeleccionarOpcion($event.value)">
+      @for (opcion of pregunta.opciones; track $index) {
+        <label class="opcion-card" [class.opcion-seleccionada]="respuestaActual === $index">
+          <mat-radio-button [value]="$index" color="primary"></mat-radio-button>
+          <span class="opcion-texto">{{ opcion.texto }}</span>
+        </label>
+      }
+    </mat-radio-group>
+
+    <!-- AVISO GATEKEEPER (Empresa, P1) -->
+    @if (muestraAvisoGatekeeper) {
+      <div class="aviso-gatekeeper">
+        <mat-icon>warning</mat-icon>
+        <span>
+          Al elegir esta opción, inicialmente solo tendrás acceso a jornadas en
+          modalidad <strong>virtual</strong>. Podrás ampliar tu cobertura cuando
+          actualices tu información de ARL.
+        </span>
+      </div>
+    }
+
+  </mat-card>
+
+  <!-- NAVEGACIÓN -->
+  <div class="navegacion-bar">
+    <button mat-stroked-button
+            class="btn-anterior"
+            (click)="irAnterior()"
+            [disabled]="esPrimera">
+      <mat-icon>chevron_left</mat-icon>
+      Atrás
+    </button>
+
+    <span class="guardado-indicador" *ngIf="!esUltima">
+      <mat-icon>cloud_done</mat-icon> Tu progreso se guarda automáticamente
+    </span>
+
+    @if (!esUltima) {
+      <button mat-flat-button
+              class="btn-siguiente"
+              (click)="irSiguiente()"
+              [disabled]="!puedeAvanzar">
+        Siguiente
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    } @else {
+      <button mat-flat-button
+              class="btn-finalizar"
+              (click)="finalizar()"
+              [disabled]="!puedeAvanzar">
+        Enviar Diagnóstico
+        <mat-icon>send</mat-icon>
+      </button>
+    }
+  </div>
+
+</div>

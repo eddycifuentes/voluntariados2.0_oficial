@@ -281,12 +281,21 @@
           </div>
 
           <!-- Botón publicar -->
-          <div class="tab-actions">
-            <button mat-flat-button class="fbd-button fbd-button-lg" type="button"
-                    (click)="publicarPerfil()">
-              🚀 Publicar Perfil
-            </button>
-          </div>
+          <div class="legal-checks" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+  <mat-checkbox [(ngModel)]="aceptaTerminos" color="primary">
+    Acepto los términos y condiciones.
+  </mat-checkbox>
+  <mat-checkbox [(ngModel)]="aceptaHabeasData" color="primary">
+    Autorizo el tratamiento de datos (Ley 1581).
+  </mat-checkbox>
+</div>
+
+<button mat-flat-button 
+        color="primary" 
+        [disabled]="formTab1.invalid || !aceptaTerminos || !aceptaHabeasData"
+        (click)="publicarPerfil()">
+  🚀 PUBLICAR PERFIL
+</button>
 
         </div>
       </mat-tab>

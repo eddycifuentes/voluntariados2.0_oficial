@@ -1,0 +1,309 @@
+/* diagnostico-runner.css
+   Paleta FBD (consistente con perfil-voluntario y perfil-organizacion):
+   - Primario:    #ff671b  (naranja FBD)
+   - Texto:       #1a1a2e  (azul oscuro)
+   - Texto suave: #6b6b80
+   - Borde suave: #e0e0e8
+   - Gris claro:  #f5f5fa
+*/
+
+.diagnostico-container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+  background: #ffffff;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.diagnostico-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e8;
+}
+
+.fbd-logo  { height: 40px; }
+.fbd-tagline {
+  color: #6b6b80;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+/* ── Tablero de etapas ──────────────────────────────────────────────────── */
+.tablero-etapas {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 24px 0 32px;
+  gap: 8px;
+}
+
+.etapa {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.etapa-circulo {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f5f5fa;
+  color: #6b6b80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 2px solid #e0e0e8;
+  transition: all 0.2s ease;
+}
+
+.etapa-activa .etapa-circulo {
+  background: #ff671b;
+  color: #ffffff;
+  border-color: #ff671b;
+  box-shadow: 0 4px 12px rgba(255, 103, 27, 0.35);
+}
+
+.etapa-completa .etapa-circulo {
+  background: #4caf50;
+  color: #ffffff;
+  border-color: #4caf50;
+}
+
+.etapa-completa .etapa-circulo mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.etapa-nombre {
+  font-size: 0.78rem;
+  color: #6b6b80;
+  font-weight: 500;
+  text-align: center;
+  max-width: 110px;
+}
+
+.etapa-activa .etapa-nombre {
+  color: #ff671b;
+  font-weight: 700;
+}
+
+.etapa-conector {
+  flex: 1 1 auto;
+  height: 2px;
+  background: #e0e0e8;
+  margin: 0 4px;
+  margin-bottom: 22px; /* alinea con el círculo */
+  transition: background 0.3s;
+}
+
+.etapa-conector.completa { background: #4caf50; }
+
+/* ── Título + progreso ──────────────────────────────────────────────────── */
+.diagnostico-titulo-bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.diagnostico-titulo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.diagnostico-progreso-text {
+  font-size: 0.85rem;
+  color: #6b6b80;
+  font-weight: 500;
+}
+
+.progreso-bar {
+  margin-bottom: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+::ng-deep .progreso-bar .mdc-linear-progress__bar-inner {
+  border-color: #ff671b !important;
+}
+
+/* ── Card de pregunta ───────────────────────────────────────────────────── */
+.pregunta-card {
+  padding: 32px !important;
+  border-radius: 16px !important;
+  box-shadow: 0 6px 24px rgba(26, 26, 46, 0.06) !important;
+  border: 1px solid #e0e0e8 !important;
+  background: #ffffff !important;
+}
+
+.pregunta-dimension {
+  display: inline-block;
+  background: #fff3eb;
+  color: #ff671b;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.pregunta-enunciado {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.45;
+  margin: 0 0 8px 0;
+}
+
+.pregunta-subtitulo {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: #6b6b80;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0 0 20px 0;
+}
+
+.subtitulo-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  color: #ff671b;
+}
+
+/* ── Opciones de respuesta ──────────────────────────────────────────────── */
+.opciones-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.opcion-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 2px solid #e0e0e8;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  background: #ffffff;
+}
+
+.opcion-card:hover {
+  border-color: #ff671b;
+  background: #fffaf7;
+}
+
+.opcion-card.opcion-seleccionada {
+  border-color: #ff671b;
+  background: #fff3eb;
+  box-shadow: 0 2px 8px rgba(255, 103, 27, 0.15);
+}
+
+.opcion-texto {
+  flex: 1;
+  font-size: 0.95rem;
+  color: #1a1a2e;
+  line-height: 1.5;
+}
+
+/* ── Aviso gatekeeper ───────────────────────────────────────────────────── */
+.aviso-gatekeeper {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: #fff8e1;
+  border-left: 4px solid #ffb300;
+  border-radius: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 0.88rem;
+  color: #5d4037;
+  line-height: 1.5;
+}
+
+.aviso-gatekeeper mat-icon {
+  color: #ffb300;
+  flex-shrink: 0;
+}
+
+/* ── Navegación ─────────────────────────────────────────────────────────── */
+.navegacion-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.btn-anterior {
+  border-color: #e0e0e8 !important;
+  color: #6b6b80 !important;
+  border-radius: 24px !important;
+  padding: 8px 20px !important;
+}
+
+.btn-siguiente,
+.btn-finalizar {
+  background-color: #ff671b !important;
+  color: #ffffff !important;
+  border-radius: 24px !important;
+  padding: 8px 24px !important;
+  box-shadow: 0 4px 12px rgba(255, 103, 27, 0.3) !important;
+}
+
+.btn-finalizar { background-color: #4caf50 !important; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important; }
+
+.btn-siguiente:disabled,
+.btn-finalizar:disabled {
+  background-color: #e0e0e8 !important;
+  color: #9e9eb0 !important;
+  box-shadow: none !important;
+}
+
+.guardado-indicador {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b6b80;
+  font-size: 0.78rem;
+}
+
+.guardado-indicador mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #4caf50;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .diagnostico-container { padding: 16px 12px 48px; }
+  .tablero-etapas { flex-wrap: wrap; gap: 4px; }
+  .etapa-nombre { display: none; }
+  .etapa-conector { margin-bottom: 0; }
+  .pregunta-card { padding: 20px !important; }
+  .navegacion-bar { flex-direction: column-reverse; align-items: stretch; }
+  .navegacion-bar button { width: 100%; }
+  .guardado-indicador { justify-content: center; }
+}
